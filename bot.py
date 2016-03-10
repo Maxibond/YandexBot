@@ -16,9 +16,13 @@ user_ids = set()
 class ACTION(object):
     Empty = 0
     Spend = 1
+    Balance = 2
+    Currency = 3
     values = {
         Empty: 'Action is empty',
         Spend: 'When user spend some money',
+        Balance: 'When user set new balance',
+        Currency: 'Users currency'
     }
 
 
@@ -29,6 +33,9 @@ class User(object):
         self.action = action
         self.trans = {}
         self.value = 0
+        self.balance = 0
+        self.summary = 0
+        self.currency = 'rub'
 
 
 def get_number(text):
@@ -55,19 +62,28 @@ def handle(user, message):
             if text == '/start':
                 answer = 'Hello, %s!\n'
             elif text == '/show':
-                answer = 'This is all your waste\n\n'
+                answer = 'This is all your spending - \n\n'
                 print user.trans
                 for key in user.trans:
-                    answer += '%s - %f\n' % (key, user.trans[key])
+                    answer += '\n%s - %d %s\n' % (key, round(user.trans[key]), user.currency)
+                    answer += str('|' * int(30 * user.trans[key] / user.summary)).ljust(40)
+                    answer += '%d'.rjust(4) % int(100 * user.trans[key]/user.summary) + '%'
+                    answer += '\n' + '_' * 30
+            elif text == '/setBalance':
+                answer = 'Enter your current balance'
+                user.action = ACTION.Balance
+            elif text == '/setCur':
+                answer = 'Enter your currency'
+                user.action = ACTION.Currency
         else:
             value = get_number(text)
             print value
             if value:
-                answer = 'Ok, you spend %s. For what?' % value
+                answer = 'Ok, you spend %s %s. For what?' % (value, user.currency)
                 keyboard = [[x] for x in user.trans.keys()]
                 user.action = ACTION.Spend
                 user.value = value
-            pass
+                user.summary += value
 
             if message.text in (u'Говно',):
                 answer = u'Сам говно!'
@@ -77,7 +93,14 @@ def handle(user, message):
         else:
             user.trans[message.text] = user.value
         user.action = ACTION.Empty
-
+        answer = 'Ok'
+    elif user.action == ACTION.Balance:
+        user.balance = message.text
+        answer = 'Ok'
+        user.action = ACTION.Empty
+    elif user.action == ACTION.Currency:
+        user.currency = message.text
+        answer = 'Ok'
     if keyboard:
         rm = tel.ReplyKeyboardMarkup.create(keyboard)
         bot.send_message(user.id, answer, reply_markup=rm)

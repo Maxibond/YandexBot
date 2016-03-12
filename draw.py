@@ -122,11 +122,11 @@ def drawCircle(time, tags):
     draw.text((pad, pad), time, fill='black', font=fontHead)
     draw.line([(pad, pad+20), (img_w-pad, pad+20)], fill='black', width=1)
     r = 100
-    colors = ['#1abc9c', '#2ecc71', '#3498db', '#9b59b6', '#34495e', '#f1c40f', '#e67e22', '#e74c3c', '#95a5a6']
+    colors = ['#73BF43', '#F48221', '#0065B3', '#CF3734', '#FEF330', '#f1c40f', '#e67e22', '#e74c3c', '#95a5a6']
     random.shuffle(colors)
     x_pos = img_w / 2
     y_pos = x_pos
-    draw.ellipse((x_pos-r-2, y_pos-r-2, x_pos+r+2, y_pos+r+2), fill='black', outline='black')
+    draw.ellipse((x_pos-r-1, y_pos-r-1, x_pos+r+1, y_pos+r+1), fill='black', outline='black')
     total_amount = sum(abs(t.balance) for t in tags)
     tag_gen = (float(abs(t.balance))/total_amount*100 for t in tags)
     colors = (clr for clr in colors)
@@ -153,7 +153,7 @@ def drawCircle(time, tags):
 
     for l in legend:
         draw.rectangle([(pad, y_pos), (pad+30, y_pos + tag_width/2)], fill=l[0])
-        text = l[1].name + ' - ' + str(abs(l[1].balance)) + ' (' + str(tag_gen.next())
+        text = l[1].name + ' - ' + str(abs(l[1].balance)) + ' (%.2f %)' % str(tag_gen.next())
         draw.text((2*pad+30, y_pos), text, fill='black', font=font)
         y_pos += tag_width
 

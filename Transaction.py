@@ -10,7 +10,7 @@ class Transaction(object):
         self.value = value
 
     def __str__(self):
-        return "%s %s %d" % (str(self.data), self.tag, self.value)
+        return "%s %s %d" % (str(self.data)[0:-6], self.tag, self.value)
 
 
 def show(user):
@@ -27,12 +27,25 @@ def show(user):
 def get_tags(user):
     return list({i.tag for i in pool if i.uid == user.id})
 
+
+def get_history(user, k=10):
+    answer = '\n'
+    i = 0
+    for record in pool:
+        if record.uid == user.id:
+            i += 1
+            answer = '%s\n%s' % (record, answer)
+            if i == k:
+                break
+
+    return 'Последние %d транзакций - \n%s' % (i, answer)
+
 pool = list()
-pool.append(Transaction(108478453, u"Молочко", datetime.datetime.now(), 50))
-pool.append(Transaction(108478453, u"Еда", datetime.datetime.now(), 150))
-pool.append(Transaction(108478453, u"Такси", datetime.datetime.now(), 90))
-pool.append(Transaction(108478453, u"Ананас", datetime.datetime.now(), 700))
-pool.append(Transaction(108478453, u"Бензин", datetime.datetime.now(), 1000))
-pool.append(Transaction(108478453, u"Желтая крыша", datetime.datetime.now(), 200))
+pool.append(Transaction(108478453, "Еда", datetime.datetime.now(), 150))
+pool.append(Transaction(108478453, "Такси", datetime.datetime.now(), 90))
+pool.append(Transaction(108478453, "Молочко", datetime.datetime.now(), 50))
+pool.append(Transaction(108478453, "Ананас", datetime.datetime.now(), 700))
+pool.append(Transaction(108478453, "Бензин", datetime.datetime.now(), 1000))
+pool.append(Transaction(108478453, "Желтая крыша", datetime.datetime.now(), 200))
 
 

@@ -136,13 +136,13 @@ def drawCircle(time, tags):
     used_colors = []
     if tags:
         used_colors.append(color)
-    for i in xrange(0, 360):
-        i *= 0.0174533 # grad to rad
+    for i in xrange(0, 360, 0.25):
+        i *= 0.0174533/4 # grad to rad
         if value <= 0:
             value = tag_gen.next()
             color = colors.next()
             used_colors.append(color)
-        draw.line([(x_pos, y_pos), (x_pos+r*math.cos(i), y_pos+r*math.sin(i))], fill=color, width=2)
+        draw.line([(x_pos, y_pos), (x_pos+r*math.cos(i), y_pos+r*math.sin(i))], fill=color, width=1)
         value -= pog
 
     # draw legend

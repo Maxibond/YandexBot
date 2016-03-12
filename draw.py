@@ -4,6 +4,13 @@ from PIL import Image, ImageDraw, ImageFont
 
 import math
 
+# Styles
+fontHead = ImageFont.truetype("assets/georgia-bold.ttf", 18)
+font = ImageFont.truetype("assets/georgia.ttf", 14)
+tag_margin = 5
+tag_width = 30
+pad = 5
+
 class TagType():
     debit = 0
     credit = 1
@@ -36,13 +43,6 @@ if __name__ == '__main__':
 
     total_amount = sum(abs(t.balance) for t in tags)
     total_balance = sum(t.balance for t in tags)
-
-    # Styles
-    fontHead = ImageFont.truetype("assets/georgia-bold.ttf", 18)
-    font = ImageFont.truetype("assets/georgia.ttf", 14)
-    tag_margin = 5
-    tag_width = 30
-    pad = 5
 
     # Header
     draw.text((pad, pad), time, fill='black', font=fontHead)
@@ -114,6 +114,8 @@ def drawCircle(time, tags):
     img_h = 300 + 25 * len(tags)
     image = Image.new("RGBA", (img_w, img_h), (0,0,0,0))
     draw = ImageDraw.Draw(image)
+    draw.text((pad, pad), time, fill='black', font=fontHead)
+    draw.line([(pad, pad+16), (img_w-pad, pad+16)], fill='black', width=1)
     r = 100
     colors = ['indigo', 'gold', 'hotpink', 'firebrick', 'indianred', 'yellow', 'mistyrose', 'darkolivegreen', 'olive', 'darkseagreen', 'pink', 'tomato', 'lightcoral', 'orangered', 'navajowhite', 'lime', 'palegreen', 'darkslategrey', 'greenyellow', 'burlywood', 'seashell', 'mediumspringgreen', 'fuchsia', 'papayawhip', 'blanchedalmond', 'chartreuse', 'dimgray', 'black', 'peachpuff', 'springgreen', 'aquamarine', 'white', 'orange', 'lightsalmon', 'darkslategray', 'brown', 'ivory', 'dodgerblue', 'peru', 'lawngreen', 'chocolate', 'crimson', 'forestgreen', 'darkgrey', 'lightseagreen', 'cyan', 'mintcream', 'silver', 'antiquewhite', 'mediumorchid', 'skyblue', 'gray', 'darkturquoise', 'goldenrod', 'darkgreen', 'floralwhite', 'darkviolet', 'darkgray', 'moccasin', 'saddlebrown', 'grey', 'darkslateblue', 'lightskyblue', 'lightpink', 'mediumvioletred', 'slategrey', 'red', 'deeppink', 'limegreen', 'darkmagenta', 'palegoldenrod', 'plum', 'turquoise', 'lightgrey', 'lightgoldenrodyellow', 'darkgoldenrod', 'lavender', 'maroon', 'yellowgreen', 'sandybrown', 'thistle', 'violet', 'navy', 'magenta', 'dimgrey', 'tan', 'rosybrown', 'olivedrab', 'blue', 'lightblue', 'ghostwhite', 'honeydew', 'cornflowerblue', 'slateblue', 'linen', 'darkblue', 'powderblue', 'seagreen', 'darkkhaki', 'snow', 'sienna', 'mediumblue', 'royalblue', 'lightcyan', 'green', 'mediumpurple', 'midnightblue', 'cornsilk', 'paleturquoise', 'bisque', 'slategray', 'darkcyan', 'khaki', 'wheat', 'teal', 'darkorchid', 'deepskyblue', 'salmon', 'darkred', 'steelblue', 'palevioletred', 'lightslategray', 'aliceblue', 'lightslategrey', 'lightgreen', 'orchid', 'gainsboro', 'mediumseagreen', 'lightgray', 'mediumturquoise', 'lemonchiffon', 'cadetblue', 'lightyellow', 'lavenderblush', 'coral', 'purple', 'aqua', 'whitesmoke', 'mediumslateblue', 'darkorange', 'mediumaquamarine', 'darksalmon', 'beige', 'blueviolet', 'azure', 'lightsteelblue', 'oldlace']
     random.shuffle(colors)

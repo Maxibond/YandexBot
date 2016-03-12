@@ -126,7 +126,7 @@ def drawCircle(time, tags):
     random.shuffle(colors)
     x_pos = img_w / 2
     y_pos = x_pos
-    draw.ellipse((x_pos, y_pos, y_pos, x_pos), outline='black')
+    draw.ellipse((x_pos-r-2, y_pos-r-2, x_pos+r+2, y_pos+r+2), fill='black', outline='black')
     total_amount = sum(abs(t.balance) for t in tags)
     tag_gen = (float(abs(t.balance))/total_amount*100 for t in tags)
     colors = (clr for clr in colors)
@@ -149,10 +149,12 @@ def drawCircle(time, tags):
     y_pos += r + pad
 
     legend = zip(used_colors, tags)
+    tag_gen = (float(abs(t.balance))/total_amount*100 for t in tags)
 
     for l in legend:
         draw.rectangle([(pad, y_pos), (pad+30, y_pos + tag_width/2)], fill=l[0])
-        draw.text((2*pad+30, y_pos), l[1].name + ' - ' + str(abs(l[1].balance)), fill='black', font=font)
+        text = l[1].name + ' - ' + str(abs(l[1].balance)) + ' (' + str(tag_gen.next())
+        draw.text((2*pad+30, y_pos), text, fill='black', font=font)
         y_pos += tag_width
 
     del draw

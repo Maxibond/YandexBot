@@ -26,7 +26,7 @@ class Tag():
         self.type = type
         self.balance = balance
 
-if __name__ == '__main__':
+def drawLines(time, tags):
 
     img_w = 310
     img_h = 500
@@ -35,11 +35,11 @@ if __name__ == '__main__':
     draw = ImageDraw.Draw(image)
 
     # Receiving tags
-    time = "March"
-
-    tags = [Tag(u'Еда', TagType.credit, -230), Tag(u'Транспорт', TagType.credit, -100), Tag(u'Зарплата', TagType.debit, 500) ]
-
-    tags.sort(key=lambda t: abs(t.balance), reverse=True)
+    # time = "March"
+    #
+    # tags = [Tag(u'Еда', TagType.credit, -230), Tag(u'Транспорт', TagType.credit, -100), Tag(u'Зарплата', TagType.debit, 500) ]
+    #
+    # tags.sort(key=lambda t: abs(t.balance), reverse=True)
 
     total_amount = sum(abs(t.balance) for t in tags)
     total_balance = sum(t.balance for t in tags)

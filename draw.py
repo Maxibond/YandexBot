@@ -122,8 +122,8 @@ def drawCircle(time, tags):
     draw.text((pad, pad), time, fill='black', font=fontHead)
     draw.line([(pad, pad+20), (img_w-pad, pad+20)], fill='black', width=1)
     r = 100
-    colors = ['#1abc9c', '#2ecc71', '#3498db', '#9b59b6', '#34495e', '#f1c40f', '#e67e22', '#e74c3c', '#95a5a6',
-              '#16a085', '#27ae60', '#2980b9', '#8e44ad', '#2c3e50', '#f39c12', '#d35400', '#c0392b', '#7f8c8d']
+    colors = ['#1abc9c', '#2ecc71', '#3498db', '#9b59b6', '#34495e', '#f1c40f', '#e67e22', '#e74c3c', '#95a5a6']
+    random.shuffle(colors)
     x_pos = img_w / 2
     y_pos = x_pos
     draw.ellipse((x_pos, y_pos, y_pos, x_pos), outline='black')
@@ -152,7 +152,7 @@ def drawCircle(time, tags):
 
     for l in legend:
         draw.rectangle([(pad, y_pos), (pad+30, y_pos + tag_width/2)], fill=l[0])
-        draw.text((2*pad+30, y_pos), l[1].name, fill='black', font=font)
+        draw.text((2*pad+30, y_pos), l[1].name + ' - ' + str(abs(l[1].balance)), fill='black', font=font)
         y_pos += tag_width
 
     del draw

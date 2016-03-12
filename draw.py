@@ -110,7 +110,7 @@ def drawLines(time, tags):
         y_pos += tag_margin + tag_width
 
     del draw
-    image.save("test.png", "PNG")
+    image.save("1.png", "PNG")
 
 # Draw Circle Total
 def drawCircle(time, tags):
@@ -136,8 +136,8 @@ def drawCircle(time, tags):
     used_colors = []
     if tags:
         used_colors.append(color)
-    for i in xrange(0, 360, 0.25):
-        i *= 0.0174533/4 # grad to rad
+    for i in xrange(0, 360):
+        i *= 0.0174533 # grad to rad
         if value <= 0:
             value = tag_gen.next()
             color = colors.next()
@@ -159,6 +159,3 @@ def drawCircle(time, tags):
 
     del draw
     image.save("1.png", "PNG")
-
-
-

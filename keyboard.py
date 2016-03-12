@@ -1,3 +1,4 @@
+# coding=utf-8
 def sort_by_size(keys):
     is_done = False
     while not is_done:
@@ -17,7 +18,6 @@ def free_len(k):
 
 
 def add_button(kb, key):
-    print kb
     if not kb:
         kb.append([key])
     else:
@@ -30,7 +30,7 @@ def add_button(kb, key):
 
 def create_keyboard(keys):
     sort_by_size(keys)
-    kb = []
+    kb = [[u'Прибыль'], ]
     for key in keys:
         add_button(kb, key)
     return kb

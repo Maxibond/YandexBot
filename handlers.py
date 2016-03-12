@@ -6,7 +6,8 @@ import keyboard as kb
 import transaction as journal
 
 
-def get_number(text):
+def get_number(text, user):
+    text = text.replace(user.currency, ' ').strip()
     result = False
     try:
         result = float(text)
@@ -36,62 +37,67 @@ def handle_empty(user, text):
     if text is None:
         return "Sorry, I know only words and commands.", False
     if text.startswith('/'):
-        if text == '/start':
+        if text.startswith('/start'):
             answer = 'Привет, %s!\n\n' \
                      'Я создан что бы помочь тебе следить за твоим расходами\n' \
                      'Давай начнем с простого - \n\n' \
                      'Сколько у тебя сейчас денег?' % user.name.encode("utf8")
             user.action = ACTION.Balance
-        elif text == '/show':
+        elif text.startswith('/total'):
             records = journal.show(user)
             if len(records):
-                draw.drawCircle(u"ЯНВАРЬ", records)
+                draw.drawCircle(u"Расходы за март:", records)
                 file_info = tel.InputFileInfo("1.png", open("1.png", "rb"), "image/png")
 
                 return tel.InputFile("photo", file_info), False
             else:
-                return "Рано", False
+                return "Ты же еще ничего не потратил, какие результаты тебе?", False
+        elif text.startswith('/balance'):
+            answer = 'Текущий баланс - %d%s.' % (user.balance, user.currency.encode('utf8'))
+        elif text.startswith('/history'):
+            answer = journal.get_history(user)
 
     else:
-        value = get_number(text)
+        value = get_number(text, user)
         print value
         if value:
-            answer = 'Напиши на что ты потратил %d %s' % (value, user.currency.encode("utf8"))
+            answer = 'На что ты потратил %d%s?' % (value, user.currency.encode("utf8"))
             keyboard = kb.create_keyboard(journal.get_tags(user))
             user.action = ACTION.Spend
             user.value = value
-            # user.summary += value
     return answer, keyboard
 
 
 def handle_spend(user, text):
     journal.pool.append(journal.Transaction(user.id, text, datetime.datetime.now(), user.value))
     user.action = ACTION.Empty
-    return "Ok", False
-
-
-def handle_unknown(user, text):
-    return 'Haha, this is prototype!', False
+    user.balance -= user.value
+    if user.balance < 100:
+        return "Осторожно, у тебя осталось мало средств!\n" \
+               "Текущий баланс - %d%s" % (user.balance, user.currency.encode('utf8')), False
+    else:
+        return "Добавил!\n" \
+               "Текущий баланс всего %d%s" % (user.balance, user.currency.encode('utf8')), False
 
 
 def handle_balance(user, text):
-    value = get_number(text)
+    value = get_number(text, user)
     if value:
         user.balance = value
         user.action = ACTION.Currency
-        answer = "Отлично\nТеперь укажи валюту"
-        return answer, [['руб', '$', '€'], ['БЕЛЛОРУСКИЕ РУБЛИ']]
+        answer = "Отлично!\nТеперь укажи валюту"
+        return answer, [['руб', '$', '€'], ]
     else:
         return "Извини, но я не понимаю такое число\n" \
                "Вводи числа в формате, как показано ниже - \n\n" \
-               "123\n123 00\n123.00\n\nИ так, повторим\nКакой баланс у тебя сейчас?" \
+               "123\n123\n123.00\n\nИ так, повторим\nКакой баланс у тебя сейчас?" \
                "", False
 
 
 def handle_currency(user, text):
     user.currency = text
     user.action = ACTION.Empty
-    return 'Здорово\nТеперь твой баланс %d %s\n\n' \
+    return 'Здорово\nТеперь твой баланс %d%s\n\n' \
            'А теперь давай потратим на что-нибудь деньги\n' \
            'Напиши сумму, которую ты потратил(или заработал)' \
            % (user.balance, user.currency.encode("utf8")), False

@@ -33,9 +33,8 @@ def add(_users, user):
 
 
 def handle(user, message):
-    text = message.text
     rm = tel.ReplyKeyboardHide.create()
-    answer, keyboard = handlers.handle(user, text)
+    answer, keyboard = handlers.handle(user, message.text)
     if keyboard:
         rm = tel.ReplyKeyboardMarkup.create(keyboard)
     if answer:

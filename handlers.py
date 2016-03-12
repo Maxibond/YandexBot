@@ -53,7 +53,7 @@ def handle_empty(user, text):
         value = get_number(text)
         print value
         if value:
-            answer = 'Ok, you spend %s %s. For what?' % (value, user.currency)
+            answer = 'Напиши на что ты потратил %d %s' % (value, user.currency.encode("utf8"))
             keyboard = kb.create_keyboard(journal.get_tags(user))
             user.action = ACTION.Spend
             user.value = value
@@ -75,9 +75,9 @@ def handle_balance(user, text):
     value = get_number(text)
     if value:
         user.balance = value
-        user.action = ACTION.Empty
-        answer = "Отлично"
-        return answer, False
+        user.action = ACTION.Currency
+        answer = "Отлично\nТеперь укажи валюту"
+        return answer, [['руб', '$', '€'], ['БЕЛЛОРУСКИЕ РУБЛИ']]
     else:
         return "Извини, но я не понимаю такое число\n" \
                "Вводи числа в формате, как показано ниже - \n\n" \
@@ -85,12 +85,20 @@ def handle_balance(user, text):
                "", False
 
 
+def handle_currency(user, text):
+    user.currency = text
+    user.action = ACTION.Empty
+    return 'Здорово\nТеперь твой баланс %d %s\n\n' \
+           'А теперь давай потратим на что-нибудь деньги\n' \
+           'Напиши сумму, которую ты потратил(или заработал)' \
+           % (user.balance, user.currency.encode("utf8")), False
+
 
 action_handler = {
     ACTION.Empty: handle_empty,
     ACTION.Spend: handle_spend,
     ACTION.Balance: handle_balance,
-    ACTION.Currency: handle_unknown,
+    ACTION.Currency: handle_currency,
     ACTION.New: handle_empty,
 }
 

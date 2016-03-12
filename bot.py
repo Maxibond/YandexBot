@@ -51,7 +51,7 @@ def main():
     current_id = None
     while True:
         updates = bot.get_updates(offset=current_id).wait()
-        for update in updates:
+        for update in updates or []:
             current_id = update.update_id + 1
             msg = update.message
             _user = User(msg.sender.id, '%s %s' % (msg.sender.first_name, msg.sender.last_name))

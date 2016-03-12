@@ -11,23 +11,27 @@ tag_margin = 5
 tag_width = 30
 pad = 5
 
-class TagType():
-    debit = 0
-    credit = 1
-    combo = 2
 
-class Tag():
+class Tag:
     name = 'default'
-    type = TagType.combo
     balance = 0
 
-    def __init__(self, name, type, balance):
+    def __init__(self, name, balance):
         self.name = name
-        self.type = type
         self.balance = balance
 
-def drawLines(time, tags):
 
+def convert_tags(tags):
+    res = []
+    for i in tags.keys():
+        res.append(Tag(i, tags[i]))
+    res.sort(key=lambda m: m.balance, reverse=True)
+    return res
+
+
+def drawLines(time, tags):
+    tags = convert_tags(tags)
+    print tags
     img_w = 310
     img_h = 500
     image = Image.new("RGBA", (img_w, img_h), (0,0,0,0))
@@ -110,6 +114,7 @@ def drawLines(time, tags):
 
 # Draw Circle Total
 def drawCircle(time, tags):
+    tags = convert_tags(tags)
     img_w = 310
     img_h = 300 + 25 * len(tags)
     image = Image.new("RGBA", (img_w, img_h), (0,0,0,0))
@@ -150,7 +155,7 @@ def drawCircle(time, tags):
         y_pos += tag_width
 
     del draw
-    image.save("test.png", "PNG")
+    image.save("1.png", "PNG")
 
 
 

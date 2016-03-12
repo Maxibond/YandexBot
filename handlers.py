@@ -1,7 +1,7 @@
 # coding=utf-8
 import datetime
 import twx.botapi as tel
-import graphics
+import draw
 import keyboard as kb
 import transaction as journal
 
@@ -43,11 +43,14 @@ def handle_empty(user, text):
                      'Сколько у тебя сейчас денег?' % user.name.encode("utf8")
             user.action = ACTION.Balance
         elif text == '/show':
-            journal.show(user)
-            graphics.create_png(journal.show(user))
-            file_info = tel.InputFileInfo("1.png", open("1.png", "rb"), "image/png")
+            records = journal.show(user)
+            if len(records):
+                draw.drawCircle(u"ЯНВАРЬ", records)
+                file_info = tel.InputFileInfo("1.png", open("1.png", "rb"), "image/png")
 
-            return tel.InputFile("photo", file_info), False
+                return tel.InputFile("photo", file_info), False
+            else:
+                return "Рано", False
 
     else:
         value = get_number(text)

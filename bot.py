@@ -60,6 +60,6 @@ def main():
             print '"%s" from %s' % (msg.text, _user.name)
             handle(find_user(_user.id), msg)
         if not len(updates):
-            time.sleep(2)
+            time.sleep(0.2)
 
 main()

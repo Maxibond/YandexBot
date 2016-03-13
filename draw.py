@@ -24,10 +24,11 @@ class Tag:
         self.balance = balance
 
 
-def convert_tags(tags):
+def convert_tags(tags, add_positive=True):
     res = []
     for i in tags.keys():
-        res.append(Tag(i, tags[i]))
+        if tags[i] > 0 or not add_positive:
+            res.append(Tag(i.decode('utf8'), -tags[i]))
     res.sort(key=lambda m: m.balance, reverse=True)
     return res
 
@@ -129,7 +130,7 @@ def drawLines(time, tags):
 
 # Draw Circle Total
 def drawCircle(time, tags):
-    tags = convert_tags(tags)
+    tags = convert_tags(tags, False)
     img_w = 310
     img_h = 300 + 25 * len(tags)
     image = Image.new("RGB", (img_w, img_h), '#EBFFE6')

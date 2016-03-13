@@ -34,6 +34,7 @@ synonym = {
     '/total': ['всего', 'стат', 'месяц', '/total'],
     '/history': ['история', 'выписка', '/history'],
     '/balance': ['/balance', 'баланс', 'остаток'],
+    '/stats': ['/stats', 'статистика'],
 }
 
 
@@ -69,7 +70,14 @@ def handle_empty(user, text):
     elif text.lower() in synonym['/history']:
         answer = journal.get_history(user)
         return answer, False
-
+    elif text.lower() in synonym['/stats']:
+        records = journal.show(user)
+        if len(records):
+            draw.drawLines(u"Март", records)
+            file_info = tel.InputFileInfo("1.png", open("1.png", "rb"), "image/png")
+            return tel.InputFile("photo", file_info), False
+        else:
+            return "Слишком мало данных для статистики", False
     else:
         value = get_number(text, user)
         print value
@@ -130,8 +138,11 @@ def t_handle_spend(user, text):
     user.action = ACTION.Empty
     user.balance -= user.value
     action_handler[ACTION.Spend] = handle_spend
-    # return ('%d' % user.value), False
-    return ('%d%s%sn%d%s' % (user.value, user.currency, text, user.balance, user.currency)), False
+    if user.value >= 0:
+        return 'Ты потратил %d%s на %s.\n Текущий баланс - %d%s' \
+               % (user.value, user.currency, text, user.balance, user.currency), False
+    else:
+        return 'Текущий баланс - %d%s' % (user.balance, user.currency), False
 
 
 def t_handle_balance(user, text):
@@ -151,7 +162,7 @@ def t_handle_currency(user, text):
     user.currency = text.replace('.', ' ').strip()
     user.action = ACTION.Empty
     action_handler[ACTION.Currency] = handle_currency
-    return 'Здорово!\nТеперь твой баланс %d%s\n\nА теперь давай потратимся на что-нибудь\n' \
+    return 'Твой баланс %d%s\n\nА теперь давай потратимся на что-нибудь\n' \
         'Напиши сумму, которую ты потратил(или заработал)' % (user.balance, user.currency), False
 
 

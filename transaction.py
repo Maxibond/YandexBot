@@ -41,11 +41,11 @@ def get_history(user, k=10):
     return 'Последние %d транзакций - \n%s' % (i, answer)
 
 pool = list()
-pool.append(Transaction(108478453, "Еда", datetime.datetime.now(), 150))
-pool.append(Transaction(108478453, "Такси", datetime.datetime.now(), 90))
-pool.append(Transaction(108478453, "Молочко", datetime.datetime.now(), 50))
-pool.append(Transaction(108478453, "Ананас", datetime.datetime.now(), 700))
-pool.append(Transaction(108478453, "Бензин", datetime.datetime.now(), 1000))
-pool.append(Transaction(108478453, "Желтая крыша", datetime.datetime.now(), 200))
+# pool.append(Transaction(108478453, "Еда", datetime.datetime.now(), 150))
+# pool.append(Transaction(108478453, "Такси", datetime.datetime.now(), 90))
+# pool.append(Transaction(108478453, "Молочко", datetime.datetime.now(), 50))
+# pool.append(Transaction(108478453, "Ананас", datetime.datetime.now(), 700))
+# pool.append(Transaction(108478453, "Бензин", datetime.datetime.now(), 1000))
+# pool.append(Transaction(108478453, "Желтая крыша", datetime.datetime.now(), 200))
 
 

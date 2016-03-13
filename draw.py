@@ -5,6 +5,8 @@ from PIL import Image, ImageDraw, ImageFont
 import math
 
 # Styles
+import datetime
+
 fontHead = ImageFont.truetype("assets/georgia-bold.ttf", 18)
 font = ImageFont.truetype("assets/georgia.ttf", 14)
 tag_margin = 5
@@ -48,6 +50,8 @@ def drawLines(time, tags):
 
     total_amount = sum(abs(t.balance) for t in tags)
     total_balance = sum(t.balance for t in tags)
+
+    days = datetime.date.today().day
 
     # Header
     draw.text((pad, pad), time, fill='black', font=fontHead)
@@ -109,6 +113,16 @@ def drawLines(time, tags):
         draw.rectangle([(x_pos_name, y_pos_name), (img_w - pad, y_pos_name + size_block_name[1] + 3)], fill='black')
         draw.text((x_pos_name + pad, y_pos_name), tag.name, fill='white', font=font)
         y_pos += tag_margin + tag_width
+
+    draw.line((pad, y_pos, img_w-pad, y_pos), fill='black')
+    y_pos += pad
+
+    average_debit = debit_amount / days
+    average_credit = credit_amount / days
+
+    draw.text((pad, y_pos), 'Средний доход в день: ' + str(average_debit), font=font, fill='black')
+    y_pos += pad
+    draw.text((pad, y_pos), 'Средний расход в день: ' + str(average_credit), font=font, fill='black')
 
     del draw
     image.save("1.png", "PNG")

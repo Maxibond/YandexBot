@@ -70,8 +70,17 @@ def handle_empty(user, text):
     else:
         value = get_number(text, user)
         print value
-        if value:
+        if not value:
+            text = text.split(' ')
+            if len(text) == 2:
+                value = get_number(text[0], user)
+                answer = text[1]
+                if not value:
+                    value = get_number(text[1], user)
+                    answer = text[0]
+        if not answer:
             answer = 'На что ты потратил %d%s?' % (value, user)
+        if value:
             keyboard = kb.create_keyboard(journal.get_tags(user))
             user.action = ACTION.Spend
             user.value = value

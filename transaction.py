@@ -40,6 +40,13 @@ def get_history(user, k=10):
 
     return 'Последние %d транзакций - \n%s' % (i, answer)
 
+
+def cancel_last_transaction(user):
+    for i in xrange(len(pool), 0, -1):
+        if pool[i].uid == user.id:
+            del pool[i]
+
+
 pool = list()
 # pool.append(Transaction(108478453, "Еда", datetime.datetime.now(), 150))
 # pool.append(Transaction(108478453, "Такси", datetime.datetime.now(), 90))

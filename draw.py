@@ -137,7 +137,7 @@ def drawCircle(time, tags):
     draw.text(((img_w-fontHead.getsize(time)[0])/2, pad), time, fill='black', font=fontHead)
     draw.line([(pad, pad+20), (img_w-pad, pad+20)], fill='black', width=1)
     r = 100
-    colors = ['#9FFFCF', '#9F9FFF', '#9FE6FF', '#E59FFF', '#FF9FB6', '#FFBEA4', '#C0FF9F', '#FFEEA4', '#ABAFFF', '#A1CCFF']
+    colors = ['#9FFFCF', '#9F9FFF', '#E59FFF', '#FF9FB6', '#FFBEA4', '#C0FF9F', '#FFEEA4', '#ABAFFF', '#A1CCFF']
     # random.shuffle(colors)
     x_pos = img_w / 2
     y_pos = x_pos
@@ -174,7 +174,7 @@ def drawCircle(time, tags):
         draw.rectangle([(pad, y_pos), (pad+45, y_pos + tag_width/2)], fill=l[0])
         text = l[1].name + ' - ' + str(abs(l[1].balance))
         draw.text((2*pad+30, y_pos), text, fill='black', font=font)
-        text = '{0:.2f} %'.format(tag_gen.next())
+        text = '{0:.2f}'.format(tag_gen.next())
         draw.text((pad, y_pos), text, fill='black', font=font)
         y_pos += tag_width
 

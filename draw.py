@@ -120,9 +120,9 @@ def drawLines(time, tags):
     average_debit = debit_amount / days
     average_credit = credit_amount / days
 
-    draw.text((pad, y_pos), 'Средний доход в день: ' + str(average_debit), font=font, fill='black')
-    y_pos += pad
-    draw.text((pad, y_pos), 'Средний расход в день: ' + str(average_credit), font=font, fill='black')
+    draw.text((pad, y_pos), u'Средний доход в день: ' + str(average_debit), font=font, fill='black')
+    y_pos += pad*2
+    draw.text((pad, y_pos), u'Средний расход в день: ' + str(average_credit), font=font, fill='black')
 
     del draw
     image.save("1.png", "PNG")

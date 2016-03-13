@@ -28,11 +28,12 @@ class ACTION(object):
         Currency: 'Users currency',
     }
 
-slovar = {
+synonym = {
     '/start': ['старт', 'обучение', 'помощь', '/start'],
-    '/setbalance': ['баланс', 'установить', '/setbalance'],
+    '/setbalance': ['изменить баланс', '/setbalance'],
     '/total': ['всего', 'стат', 'месяц', '/total'],
-    '/history': ['история', 'напомни', '/history'],
+    '/history': ['история', 'выписка', '/history'],
+    '/balance': ['/balance', 'баланс', 'остаток'],
 }
 
 
@@ -40,33 +41,35 @@ def handle_empty(user, text):
     answer, keyboard = False, False
     if text is None:
         return "Я могу отвечать только на текст.", False
-    if text.startswith('/'):
-        if text.startswith('/start'):
-            answer = 'Привет, %s!\n\n' \
-                     'Я создан что бы помочь тебе следить за твоим расходами\n' \
-                     'Давай начнем с простого - \n\n' \
-                     'Сколько у тебя сейчас денег?' % user.name.encode("utf8")
-            user.action = ACTION.Balance
-            action_handler[ACTION.Spend] = t_handle_spend
-            action_handler[ACTION.Balance] = t_handle_balance
-            action_handler[ACTION.Currency] = t_handle_currency
-        elif text.startswith('/total'):
-            records = journal.show(user)
-            if len(records):
-                draw.drawCircle(u"Март", records)
-                file_info = tel.InputFileInfo("1.png", open("1.png", "rb"), "image/png")
-                return tel.InputFile("photo", file_info), False
-            else:
-                return "Слишком мало данных для статистики", False
-        elif text.startswith('/balance'):
-            answer = 'Текущий баланс - %d%s\n' % (user.balance, user.currency)
-        elif text.startswith('/setbalance'):
-            user.action = ACTION.Balance
-            answer = 'Текущий баланс - %d%s.\n/setbalance для отмены.\nВведите новое значение - ' \
-                     % (user.balance, user.currency.encode('utf8'))
-        elif text.startswith('/history'):
-            answer = journal.get_history(user)
-            return answer, False
+
+    elif text.lower() in synonym['/start']:
+        answer = 'Привет, %s!\n\n' \
+                 'Я создан что бы помочь тебе следить за твоим расходами\n' \
+                 'Давай начнем с простого - \n\n' \
+                 'Сколько у тебя сейчас денег?' % user.name.encode("utf8")
+        user.action = ACTION.Balance
+        action_handler[ACTION.Spend] = t_handle_spend
+        action_handler[ACTION.Balance] = t_handle_balance
+        action_handler[ACTION.Currency] = t_handle_currency
+    elif text.lower() in synonym['/total']:
+        records = journal.show(user)
+        if len(records):
+            draw.drawCircle(u"Март", records)
+            file_info = tel.InputFileInfo("1.png", open("1.png", "rb"), "image/png")
+            return tel.InputFile("photo", file_info), False
+        else:
+            return "Слишком мало данных для статистики", False
+    elif text.lower() in synonym['/balance']:
+        answer = 'Текущий баланс - %d%s\n' % (user.balance, user.currency)
+
+    elif text.lower() in synonym['/setbalance']:
+        user.action = ACTION.Balance
+        answer = 'Текущий баланс - %d%s.\n/setbalance для отмены.\nВведите новое значение - ' \
+                 % (user.balance, user.currency.encode('utf8'))
+    elif text.lower() in synonym['/history']:
+        answer = journal.get_history(user)
+        return answer, False
+
     else:
         value = get_number(text, user)
         print value
@@ -79,7 +82,7 @@ def handle_empty(user, text):
                     value = get_number(text[1], user)
                     answer = text[0]
         if not answer:
-            answer = 'На что ты потратил %d%s?' % (value, user)
+            answer = 'На что ты потратил %d%s?' % (value, user.currency)
         if value:
             keyboard = kb.create_keyboard(journal.get_tags(user))
             user.action = ACTION.Spend
@@ -104,13 +107,11 @@ def handle_balance(user, text):
     if value:
         user.balance = value
         user.action = ACTION.Empty
-        answer = "Новый баланс сохранен"
+        answer = "Новый баланс - %d%s" % (user.balance, user.currency)
         return answer, False
     else:
-        return "Извини, но я не понимаю такое число\n" \
-               "Вводи числа в формате, как показано ниже - \n\n" \
-               "123\n123 00\n123.00\n\nИ так, повторим\nКакой баланс у тебя сейчас?" \
-               "", False
+        return "Извини, но я не понимаю такое число\nВводи числа в формате, как показано ниже -" \
+               "\n\n123\n123 00\n123.00\n\nИ так, повторим\nКакой баланс у тебя сейчас?", False
 
 
 def handle_currency(user, text):
@@ -129,8 +130,8 @@ def t_handle_spend(user, text):
     user.action = ACTION.Empty
     user.balance -= user.value
     action_handler[ACTION.Spend] = handle_spend
-    return ('%d' % user.value), False
-    # return ('%d%s%sn%d%s' % (user.value, user.currency, text, user.balance, user.currency)), False
+    # return ('%d' % user.value), False
+    return ('%d%s%sn%d%s' % (user.value, user.currency, text, user.balance, user.currency)), False
 
 
 def t_handle_balance(user, text):
@@ -140,21 +141,18 @@ def t_handle_balance(user, text):
         user.action = ACTION.Currency
         answer = "Отлично!\nТеперь укажи валюту"
         action_handler[ACTION.Balance] = handle_balance
-        return answer, [['руб'], ['$'], ['€'], ]
+        return answer, [['руб'], ['$'], ['€']]
     else:
-        return "Извини, но я не понимаю такое число\n" \
-              "Вводи числа в формате, как показано ниже - \n\n" \
-              "123\n123\n123.00\n\nИ так, повторим\nКакой баланс у тебя сейчас?", False
+        return "Извини, но я не понимаю такое число\nВводи числа в формате, как показано ниже - " \
+              "\n\n123\n123\n123.00\n\nИ так, повторим\nКакой баланс у тебя сейчас?", False
 
 
 def t_handle_currency(user, text):
-    user.currency = text
+    user.currency = text.replace('.', ' ').strip()
     user.action = ACTION.Empty
     action_handler[ACTION.Currency] = handle_currency
-    return 'Здорово\nТеперь твой баланс %d%s\n\n' \
-        'А теперь давай потратим на что-нибудь деньги\n' \
-        'Напиши сумму, которую ты потратил(или заработал)' \
-        % (user.balance, user.currency.encode("utf8")), False
+    return 'Здорово!\nТеперь твой баланс %d%s\n\nА теперь давай потратимся на что-нибудь\n' \
+        'Напиши сумму, которую ты потратил(или заработал)' % (user.balance, user.currency), False
 
 
 action_handler = {
@@ -167,39 +165,3 @@ action_handler = {
 
 def handle(user, text):
     return action_handler[user.action](user, text)
-
-    # if user.action == ACTION.Empty:
-    #     answer, keyboard = handle_empty(user, text)
-    #
-    # elif user.action == ACTION.Spend:
-    #     if user.trans.get(text, False):
-    #         user.trans[text] += user.value
-    #     else:
-    #         user.trans[text] = user.value
-    #     user.action = ACTION.Empty
-    #     answer = 'Ok'
-    # elif user.action == ACTION.Balance:
-    #     user.balance = text
-    #     answer = 'Ok'
-    #     user.action = ACTION.Empty
-    # elif user.action == ACTION.Currency:
-    #     user.currency = text
-    #     answer = 'Ok'
-    # keyboard = kb.create_keyboard(['hello', 'Длинное слово', 'Мазик', 'а',
-    #                             'проездной', 'еда', 'хз что еще', 'кальян', 'тригонометрия'])
-    # print keyboard
-
-    # answer = 'This is all your spending - \n\n'
-    # print user.trans
-    # for key in user.trans:
-    #     answer += '\n%s - %d %s\n' % (key, round(user.trans[key]), user.currency)
-    #     answer += str('|' * int(30 * user.trans[key] / user.summary)).ljust(40)
-    #     answer += '%d'.rjust(4) % int(100 * user.trans[key]/user.summary) + '%'
-    #     answer += '\n' + '_' * 30
-
-    # elif text == '/setBalance':
-    #     answer = 'Enter your current balance'
-    #     user.action = ACTION.Balance
-    # elif text == '/setCur':
-    #     answer = 'Enter your currency'
-    #     user.action = ACTION.Currency

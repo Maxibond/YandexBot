@@ -7,6 +7,8 @@ import transaction as journal
 
 
 def get_number(text, user):
+    if text == '0':
+        return 0
     text = text.replace(user.currency, ' ').strip()
     result = False
     try:
@@ -29,13 +31,13 @@ class ACTION(object):
     }
 
 synonym = {
-    '/start': ['старт', 'обучение', 'помощь', '/start'],
-    '/setbalance': ['изменить баланс', '/setbalance'],
-    '/total': ['всего', 'стат', 'месяц', '/total'],
-    '/history': ['история', 'выписка', '/history'],
-    '/balance': ['/balance', 'баланс', 'остаток'],
-    '/stats': ['/stats', 'статистика'],
-    '/cancel': ['отмена', '/cancel'],
+    '/start': ['Cтарт', 'Обучение', 'Помощь', '/start'],
+    '/setbalance': ['Изменить баланс', '/setbalance'],
+    '/total': ['Всего', 'Статистика', 'Месяц', '/total'],
+    '/history': ['История', 'Выписка', '/history'],
+    '/balance': ['/balance', 'Баланс', 'Остаток'],
+    '/stats': ['/stats', 'Статистика'],
+    '/cancel': ['Отмена', '/cancel'],
 }
 
 
@@ -44,7 +46,7 @@ def handle_empty(user, text):
     if text is None:
         return "Я могу отвечать только на текст.", False
 
-    elif text.lower() in synonym['/start']:
+    elif text.lower() in synonym['/start'] or text.startswith('/start'):
         answer = 'Привет, %s!\n\n' \
                  'Я создан что бы помочь тебе следить за твоими средствами.\n' \
                  'Давай начнем с простого. \n\n' \
@@ -61,8 +63,8 @@ def handle_empty(user, text):
             return tel.InputFile("photo", file_info), False
         else:
             return "Слишком мало данных для статистики", False
-    elif text.lower() in synonym['/balance']:
-        answer = 'Текущий баланс - %d%s\n' % (user.balance, user.currency)
+    elif text.lower().strip() in synonym['/balance']:
+        answer = 'Текущий баланс %d%s\n' % (user.balance, user.currency)
 
     elif text.lower() in synonym['/setbalance']:
         user.action = ACTION.Balance
@@ -74,6 +76,7 @@ def handle_empty(user, text):
     elif text.lower() in synonym['/stats']:
         records = journal.show(user)
         if len(records):
+            # records['Доход'] += user.balance_trans.value
             draw.drawLines(u"Март", records)
             file_info = tel.InputFileInfo("1.png", open("1.png", "rb"), "image/png")
             return tel.InputFile("photo", file_info), False
@@ -81,9 +84,10 @@ def handle_empty(user, text):
             return "Слишком мало данных для статистики", False
     elif text.lower() in synonym['/cancel']:
         journal.cancel_last_transaction(user)
-        return "Последняя транзакция отменена."
+        return "Последняя транзакция отменена.", False
     elif text == '/f':
         journal.fill(user)
+        answer = "Готово"
     else:
         value = get_number(text, user)
         # print value
@@ -97,7 +101,7 @@ def handle_empty(user, text):
         #             answer = text[0]
 
         if value:
-            answer = 'На что ты потратил %d%s?\nЕсли это заработанные средства - Жми "Прибыль"' % (value, user.currency)
+            answer = 'На что ты потратил %d%s?\nЕсли это заработанные средства - Жми "➕Доход"' % (value, user.currency)
             keyboard = kb.create_keyboard(journal.get_tags(user))
             user.action = ACTION.Spend
             user.value = value
@@ -105,7 +109,7 @@ def handle_empty(user, text):
 
 
 def handle_spend(user, text):
-    if text == "Прибыль":
+    if text == "➕Доход":
         user.value = -user.value
     journal.pool.append(journal.Transaction(user.id, text, datetime.datetime.now(), user.value))
     user.balance -= user.value
@@ -114,7 +118,7 @@ def handle_spend(user, text):
         return 'Ты потратил %d%s на %s.\n Текущий баланс - %d%s' \
                % (user.value, user.currency, text, user.balance, user.currency), False
     else:
-        return 'Текущий баланс - %d%s' % (user.balance, user.currency), False
+        return 'Текущий баланс %d%s' % (user.balance, user.currency), False
 
 
 def handle_balance(user, text):
@@ -125,6 +129,7 @@ def handle_balance(user, text):
     if value:
         delta = value - user.balance
         user.balance = value
+        journal.pool.append(journal.Transaction(user.id, "➕Доход", ))
         user.balance_trans.value += delta
         user.action = ACTION.Empty
         answer = "Новый баланс - %d%s" % (user.balance, user.currency)
@@ -144,7 +149,7 @@ def handle_currency(user, text):
 
 
 def t_handle_spend(user, text):
-    if text == "Прибыль":
+    if text == "➕Доход":
         user.value = -user.value
     journal.pool.append(journal.Transaction(user.id, text, datetime.datetime.now(), user.value))
     user.action = ACTION.Empty

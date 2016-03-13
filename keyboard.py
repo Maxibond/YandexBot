@@ -30,11 +30,11 @@ def add_button(kb, key):
 
 def create_keyboard(keys):
     sort_by_size(keys)
-    if 'Прибыль' in keys:
-        keys.remove('Прибыль')
+    if '➕Доход' in keys:
+        keys.remove('➕Доход')
     if '$yhg' in keys:
         keys.remove('$yhg')
-    kb = [['Прибыль'], ]
+    kb = [['➕Доход'], ]
     for key in keys:
         add_button(kb, key)
     return kb

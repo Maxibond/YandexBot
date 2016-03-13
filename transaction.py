@@ -2,6 +2,7 @@
 import datetime
 
 
+
 class Transaction(object):
     def __init__(self, uid, tag, data, value):
         self.uid = uid
@@ -10,7 +11,7 @@ class Transaction(object):
         self.value = value
 
     def __str__(self):
-        return "%s %s %d" % (str(self.data)[0:-6], self.tag, -self.value)
+        return "%s %s %d" % (str(self.data)[0:-10], self.tag, -self.value)
 
 
 def show(user):
@@ -44,9 +45,10 @@ def get_history(user, k=10):
 
 
 def cancel_last_transaction(user):
-    for i in xrange(len(pool), 0, -1):
-        if pool[i].uid == user.id:
-            del pool[i]
+        for i in xrange(len(pool)-1, 0, -1):
+            if pool[i].uid == user.id:
+                del pool[i]
+                return
 
 
 pool = list()
@@ -59,6 +61,9 @@ def fill(user):
     pool.append(Transaction(user.id, "Ананас", datetime.datetime.now(), 700))
     pool.append(Transaction(user.id, "Бензин", datetime.datetime.now(), 1000))
     pool.append(Transaction(user.id, "Телефон", datetime.datetime.now(), 200))
-    pool.append(Transaction(user.id, "Прибыль", datetime.datetime.now(), 2000))
+    pool.append(Transaction(user.id, "Лекарства", datetime.datetime.now(), 320))
+    pool.append(Transaction(user.id, "➕Доход", datetime.datetime.now(), -3200))
+    user.balance = 340
+    # user.balance_trans.value = user.balance_trans.value + user.balance
 
 

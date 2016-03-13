@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 import math
 
+import transaction as journal
 # Styles
 import datetime
 
@@ -32,15 +33,15 @@ def convert_tags(tags, add_positive=True):
         else:
             if tags[i] > 0:
                 res.append(Tag(i.decode('utf8'), -tags[i]))
-    res.sort(key=lambda m: m.balance)
+    res.sort(key=lambda m: abs(m.balance), reverse=True)
     return res
 
 
 def drawLines(time, tags):
     tags = convert_tags(tags)
-    print tags
+    print journal.pool
     img_w = 310
-    img_h = 250 + 15 * len(tags)
+    img_h = 160 + 30 * len(tags)
     image = Image.new("RGB", (img_w, img_h), '#EBFFE6')
 
     draw = ImageDraw.Draw(image)
@@ -62,10 +63,10 @@ def drawLines(time, tags):
 
     str_total = str(total_balance)
 
-    if total_amount > 0:
-        str_total = '+' + str_total
-    else:
-        str_total = '-' + str_total
+    # if total_amount > 0:
+    #     str_total = '+' + str_total
+    # else:
+    #     str_total = '-' + str_total
     total_balance_size = fontHead.getsize(str_total)
 
     draw.text((img_w - pad - total_balance_size[0], pad), str_total, fill='black', font=fontHead)

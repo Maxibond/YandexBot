@@ -174,8 +174,8 @@ def drawCircle(time, tags):
         draw.rectangle([(pad, y_pos), (pad+45, y_pos + tag_width/2)], fill=l[0])
         text = l[1].name + ' - ' + str(abs(l[1].balance))
         draw.text((2*pad+45, y_pos), text, fill='black', font=font)
-        text = '{0:.2f}'.format(tag_gen.next())
-        draw.text((pad+(45-font.getsize(text))/2, y_pos), text, fill='black', font=font)
+        text = '{0:.1f}'.format(tag_gen.next())
+        draw.text((pad+(45-font.getsize(text)[0])/2, y_pos), text, fill='black', font=font)
         y_pos += tag_width
 
     del draw

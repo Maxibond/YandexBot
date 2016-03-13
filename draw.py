@@ -10,6 +10,7 @@ font = ImageFont.truetype("assets/georgia.ttf", 14)
 tag_margin = 5
 tag_width = 30
 pad = 5
+background_color = '#EBFFE6'
 
 
 class Tag:
@@ -33,8 +34,8 @@ def drawLines(time, tags):
     tags = convert_tags(tags)
     print tags
     img_w = 310
-    img_h = 500
-    image = Image.new("RGBA", (img_w, img_h), (0,0,0,0))
+    img_h = 300 + 15 * len(tags)
+    image = Image.new("RGB", (img_w, img_h), '#EBFFE6')
 
     draw = ImageDraw.Draw(image)
 
@@ -117,12 +118,12 @@ def drawCircle(time, tags):
     tags = convert_tags(tags)
     img_w = 310
     img_h = 300 + 25 * len(tags)
-    image = Image.new("RGBA", (img_w, img_h), (0,0,0,0))
+    image = Image.new("RGB", (img_w, img_h), '#EBFFE6')
     draw = ImageDraw.Draw(image)
-    draw.text((pad, pad), time, fill='black', font=fontHead)
+    draw.text(((img_w-fontHead.getsize(time)[0])/2, pad), time, fill='black', font=fontHead)
     draw.line([(pad, pad+20), (img_w-pad, pad+20)], fill='black', width=1)
     r = 100
-    colors = ['#1abc9c', '#2ecc71', '#3498db', '#9b59b6', '#34495e', '#f1c40f', '#e67e22', '#e74c3c', '#95a5a6']
+    colors = ['#9FFFCF', '#9F9FFF', '#9FE6FF', '#E59FFF', '#FF9FB6', '#FFBEA4', '#C0FF9F', '#FFEEA4', '#ABAFFF', '#A1CCFF']
     # random.shuffle(colors)
     x_pos = img_w / 2
     y_pos = x_pos
@@ -134,16 +135,21 @@ def drawCircle(time, tags):
     color = colors.next()
     pog = 1.0/3.6 # procents on gradus
     used_colors = []
+    def drange(start, stop, step):
+        q = start
+        while q < stop:
+            yield q
+            q += step
     if tags:
         used_colors.append(color)
-    for i in xrange(0, 360):
+    for i in drange(0, 360, 0.1):
         i *= 0.0174533 # grad to rad
         if value <= 0:
             value = tag_gen.next()
             color = colors.next()
             used_colors.append(color)
-        draw.line([(x_pos, y_pos), (x_pos+r*math.cos(i), y_pos+r*math.sin(i))], fill=color, width=1)
-        value -= pog
+        draw.line([(x_pos, y_pos), (x_pos+r*math.cos(i), y_pos+r*math.sin(i))], fill=color, width=2)
+        value -= pog/10
 
     # draw legend
     y_pos += r + pad
@@ -153,9 +159,14 @@ def drawCircle(time, tags):
 
     for l in legend:
         draw.rectangle([(pad, y_pos), (pad+30, y_pos + tag_width/2)], fill=l[0])
-        text = l[1].name + ' - ' + str(abs(l[1].balance)) + ' (' + str(tag_gen.next())
+        text = l[1].name + ' - ' + str(abs(l[1].balance))
         draw.text((2*pad+30, y_pos), text, fill='black', font=font)
+        text = '{0:.2f} %'.format(tag_gen.next())
+        draw.text((pad, y_pos), text, fill='white', font=font)
         y_pos += tag_width
 
     del draw
     image.save("1.png", "PNG")
+
+
+

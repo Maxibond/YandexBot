@@ -127,7 +127,6 @@ def drawCircle(time, tags):
     # random.shuffle(colors)
     x_pos = img_w / 2
     y_pos = x_pos
-    draw.ellipse((x_pos-r-2, y_pos-r-2, x_pos+r+2, y_pos+r+2), fill='black', outline='black')
     total_amount = sum(abs(t.balance) for t in tags)
     tag_gen = (float(abs(t.balance))/total_amount*100 for t in tags)
     colors = (clr for clr in colors)

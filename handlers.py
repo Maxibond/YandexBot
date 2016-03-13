@@ -30,6 +30,13 @@ class ACTION(object):
         New: 'Special action for new user',
     }
 
+slovar = {
+    '/start': ['старт', 'обучение', 'помощь'],
+    '/setbalance': ['баланс', 'установить'],
+    '/total': ['всего', 'стат', 'месяц'],
+    '/history': ['история', 'напомни'],
+}
+
 
 def handle_empty(user, text):
     answer = False

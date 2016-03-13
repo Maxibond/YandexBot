@@ -37,7 +37,7 @@ def drawLines(time, tags):
     tags = convert_tags(tags)
     print tags
     img_w = 310
-    img_h = 300 + 15 * len(tags)
+    img_h = 60 + 15 * len(tags)
     image = Image.new("RGB", (img_w, img_h), '#EBFFE6')
 
     draw = ImageDraw.Draw(image)
@@ -122,7 +122,7 @@ def drawLines(time, tags):
     average_credit = credit_amount / days
 
     draw.text((pad, y_pos), u'Средний доход в день: ' + str(average_debit), font=font, fill='black')
-    y_pos += pad*2
+    y_pos += pad*3
     draw.text((pad, y_pos), u'Средний расход в день: ' + str(average_credit), font=font, fill='black')
 
     del draw

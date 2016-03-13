@@ -30,7 +30,7 @@ def add_button(kb, key):
 
 def create_keyboard(keys):
     sort_by_size(keys)
-    kb = [[u'Прибыль'], ]
+    kb = [['Прибыль'], ]
     for key in keys:
         add_button(kb, key)
     return kb

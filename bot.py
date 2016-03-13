@@ -16,7 +16,7 @@ class User(object):
         self.action = action
         self.value = 0
         self.balance = 0
-        self.currency = 'rub'
+        self.currency = 'руб'
 
 
 def find_user(_id):
@@ -34,7 +34,7 @@ def add(_users, user):
 
 def handle(user, message):
     rm = tel.ReplyKeyboardHide.create()
-    answer, keyboard = handlers.handle(user, message.text)
+    answer, keyboard = handlers.handle(user, message.text.encode('utf8'))
     if keyboard:
         rm = tel.ReplyKeyboardMarkup.create(keyboard)
     if answer:

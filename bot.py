@@ -1,6 +1,10 @@
 # coding=utf-8
 import time
+
+import datetime
+
 import handlers
+import transaction as journal
 import twx.botapi as tel
 
 token = '184993535:AAGdIgccMjPGHrXSjStqqJAf8eSyeEYnTas'
@@ -11,6 +15,7 @@ users = []
 
 class User(object):
     def __init__(self, _id, name, action=handlers.ACTION.Empty):
+        self.balance_trans = journal.Transaction(_id, '$yhg', datetime.datetime.now(), 0)
         self.id = _id
         self.name = name
         self.action = action
@@ -30,6 +35,7 @@ def add(_users, user):
         if u.id == user.id:
             return
     users.append(user)
+    journal.pool.append(user.balance_trans)
 
 
 def handle(user, message):
@@ -49,16 +55,18 @@ def handle(user, message):
 def main():
     current_id = None
     while True:
-        updates = bot.get_updates(offset=current_id).wait() or []
-        for update in updates:
-            current_id = update.update_id + 1
-            msg = update.message
-            _user = User(msg.sender.id, '%s %s' % (msg.sender.first_name, msg.sender.last_name))
-            add(users, _user)
+        try:
+            updates = bot.get_updates(offset=current_id).wait() or []
+            for update in updates:
+                current_id = update.update_id + 1
+                msg = update.message
+                _user = User(msg.sender.id, '%s %s' % (msg.sender.first_name, msg.sender.last_name))
+                add(users, _user)
 
-            print '"%s" from %s' % (msg.text, _user.name)
-            handle(find_user(_user.id), msg)
-        if not len(updates):
-            time.sleep(0.2)
-
+                print '"%s" from %s' % (msg.text, _user.name)
+                handle(find_user(_user.id), msg)
+            if not len(updates):
+                time.sleep(0.2)
+        except Exception:
+            bot.send_message(108478453, "ошибка")
 main()

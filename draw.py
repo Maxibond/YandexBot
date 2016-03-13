@@ -27,9 +27,12 @@ class Tag:
 def convert_tags(tags, add_positive=True):
     res = []
     for i in tags.keys():
-        if tags[i] > 0 or not add_positive:
+        if add_positive:
             res.append(Tag(i.decode('utf8'), -tags[i]))
-    res.sort(key=lambda m: m.balance, reverse=True)
+        else:
+            if tags[i] > 0:
+                res.append(Tag(i.decode('utf8'), -tags[i]))
+    res.sort(key=lambda m: m.balance)
     return res
 
 
@@ -37,7 +40,7 @@ def drawLines(time, tags):
     tags = convert_tags(tags)
     print tags
     img_w = 310
-    img_h = 60 + 15 * len(tags)
+    img_h = 250 + 15 * len(tags)
     image = Image.new("RGB", (img_w, img_h), '#EBFFE6')
 
     draw = ImageDraw.Draw(image)
@@ -84,7 +87,7 @@ def drawLines(time, tags):
     draw.rectangle([(debit_w + pad, y_pos), (img_w - pad, y_pos + tag_width)], fill='red')
 
     debit_text = '+' + str(debit_amount)
-    credit_text = '-' + str(credit_amount)
+    credit_text = str(credit_amount)
     debit_size = font.getsize(debit_text)
     credit_size = font.getsize(credit_text)
     draw.rectangle([(pad, y_pos + pad), (pad+debit_size[0], y_pos+tag_width-pad)], fill='black')
@@ -106,7 +109,7 @@ def drawLines(time, tags):
             continue
         fill = 'green' if tag.balance > 0 else 'red'
         draw.rectangle([(pad, y_pos), (float(abs(tag.balance))/total_amount*100*m, y_pos+tag_width)], fill=fill)
-        draw.text((pad*3, pad+y_pos), str(tag.balance), fill='white', font=font)
+        draw.text((pad*3, pad+y_pos), str(tag.balance), fill='black', font=font)
         size_name = font.getsize(tag.name)
         size_block_name = (size_name[0] + 2*pad, size_name[1])
         x_pos_name = (img_w - (size_block_name[0] + pad))

@@ -35,6 +35,7 @@ synonym = {
     '/history': ['история', 'выписка', '/history'],
     '/balance': ['/balance', 'баланс', 'остаток'],
     '/stats': ['/stats', 'статистика'],
+    '/cancel': ['отмена', '/cancel'],
 }
 
 
@@ -45,9 +46,9 @@ def handle_empty(user, text):
 
     elif text.lower() in synonym['/start']:
         answer = 'Привет, %s!\n\n' \
-                 'Я создан что бы помочь тебе следить за твоим расходами\n' \
-                 'Давай начнем с простого - \n\n' \
-                 'Сколько у тебя сейчас денег?' % user.name.encode("utf8")
+                 'Я создан что бы помочь тебе следить за твоими средствами.\n' \
+                 'Давай начнем с простого. \n\n' \
+                 'Задай текущий баланс' % user.name.encode("utf8")
         user.action = ACTION.Balance
         action_handler[ACTION.Spend] = t_handle_spend
         action_handler[ACTION.Balance] = t_handle_balance
@@ -66,7 +67,7 @@ def handle_empty(user, text):
     elif text.lower() in synonym['/setbalance']:
         user.action = ACTION.Balance
         answer = 'Текущий баланс - %d%s.\n/setbalance для отмены.\nВведите новое значение - ' \
-                 % (user.balance, user.currency.encode('utf8'))
+                 % (user.balance, user.currency)
     elif text.lower() in synonym['/history']:
         answer = journal.get_history(user)
         return answer, False
@@ -78,20 +79,25 @@ def handle_empty(user, text):
             return tel.InputFile("photo", file_info), False
         else:
             return "Слишком мало данных для статистики", False
+    elif text.lower() in synonym['/cancel']:
+        journal.cancel_last_transaction(user)
+        return "Последняя транзакция отменена."
+    elif text == '/f':
+        journal.fill(user)
     else:
         value = get_number(text, user)
-        print value
-        if not value:
-            text = text.split(' ')
-            if len(text) == 2:
-                value = get_number(text[0], user)
-                answer = text[1]
-                if not value:
-                    value = get_number(text[1], user)
-                    answer = text[0]
-        if not answer:
-            answer = 'На что ты потратил %d%s?' % (value, user.currency)
+        # print value
+        # if not value:
+        #     text = text.split(' ')
+        #     if len(text) == 2:
+        #         value = get_number(text[0], user)
+        #         answer = text[1]
+        #         if not value:
+        #             value = get_number(text[1], user)
+        #             answer = text[0]
+
         if value:
+            answer = 'На что ты потратил %d%s?\nЕсли это заработанные средства - Жми "Прибыль"' % (value, user.currency)
             keyboard = kb.create_keyboard(journal.get_tags(user))
             user.action = ACTION.Spend
             user.value = value
@@ -104,7 +110,11 @@ def handle_spend(user, text):
     journal.pool.append(journal.Transaction(user.id, text, datetime.datetime.now(), user.value))
     user.balance -= user.value
     user.action = ACTION.Empty
-    return "Ok", False
+    if user.value >= 0:
+        return 'Ты потратил %d%s на %s.\n Текущий баланс - %d%s' \
+               % (user.value, user.currency, text, user.balance, user.currency), False
+    else:
+        return 'Текущий баланс - %d%s' % (user.balance, user.currency), False
 
 
 def handle_balance(user, text):
@@ -113,7 +123,9 @@ def handle_balance(user, text):
         return "Отменено", False
     value = get_number(text, user)
     if value:
+        delta = value - user.balance
         user.balance = value
+        user.balance_trans.value += delta
         user.action = ACTION.Empty
         answer = "Новый баланс - %d%s" % (user.balance, user.currency)
         return answer, False
@@ -148,6 +160,8 @@ def t_handle_spend(user, text):
 def t_handle_balance(user, text):
     value = get_number(text, user)
     if value:
+        delta = value - user.balance
+        user.balance_trans.value += delta
         user.balance = value
         user.action = ACTION.Currency
         answer = "Отлично!\nТеперь укажи валюту"

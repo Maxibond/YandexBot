@@ -41,7 +41,7 @@ synonym = {
 }
 
 
-def handle_empty(user, text):
+def handle_empty(user, text: str):
     answer, keyboard = False, False
     if text is None:
         return "Я могу отвечать только на текст.", False
@@ -50,7 +50,7 @@ def handle_empty(user, text):
         answer = 'Привет, %s!\n\n' \
                  'Я создан что бы помочь тебе следить за твоими средствами.\n' \
                  'Давай начнем с простого. \n\n' \
-                 'Задай текущий баланс' % user.name.encode("utf8")
+                 'Задай текущий баланс' % user.name
         user.action = ACTION.Balance
         action_handler[ACTION.Spend] = t_handle_spend
         action_handler[ACTION.Balance] = t_handle_balance
@@ -129,7 +129,7 @@ def handle_balance(user, text):
     if value:
         delta = value - user.balance
         user.balance = value
-        journal.pool.append(journal.Transaction(user.id, "➕Доход", ))
+        journal.pool.append(journal.Transaction(user.id, "➕Доход"))
         user.balance_trans.value += delta
         user.action = ACTION.Empty
         answer = "Новый баланс - %d%s" % (user.balance, user.currency)
@@ -145,7 +145,7 @@ def handle_currency(user, text):
     return 'Здорово\nТеперь твой баланс %d %s\n\n' \
            'А теперь давай потратим на что-нибудь деньги\n' \
            'Напиши сумму, которую ты потратил(или заработал)' \
-           % (user.balance, user.currency.encode("utf8")), False
+           % (user.balance, user.currency), False
 
 
 def t_handle_spend(user, text):

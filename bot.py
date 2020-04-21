@@ -7,13 +7,13 @@ import handlers
 import transaction as journal
 import twx.botapi as tel
 
-token = '184993535:AAGdIgccMjPGHrXSjStqqJAf8eSyeEYnTas'
+token = ''
 bot = tel.TelegramBot(token, request_method=tel.RequestMethod.GET)
 bot.update_bot_info().wait()
 users = []
 
 
-class User(object):
+class User:
     def __init__(self, _id, name, action=handlers.ACTION.Empty):
         self.balance_trans = journal.Transaction(_id, '$yhg', datetime.datetime.now(), 0)
         self.id = _id
@@ -39,17 +39,22 @@ def add(_users, user):
 
 
 def handle(user, message):
-    rm = tel.ReplyKeyboardHide.create()
-    answer, keyboard = handlers.handle(user, message.text.encode('utf8'))
-    if keyboard:
-        rm = tel.ReplyKeyboardMarkup.create(keyboard)
-    if answer:
-        if isinstance(answer, str):
-            bot.send_message(user.id, answer, reply_markup=rm)
+    rm = tel.ReplyKeyboardRemove.create()
+    try:
+        answer, keyboard = handlers.handle(user, message.text)
+        print(answer, keyboard)
+
+        if keyboard:
+            rm = tel.ReplyKeyboardMarkup.create(keyboard)
+        if answer:
+            if isinstance(answer, str):
+                bot.send_message(user.id, answer, reply_markup=rm)
+            else:
+                bot.send_photo(user.id, answer, reply_markup=rm)
         else:
-            bot.send_photo(user.id, answer, reply_markup=rm)
-    else:
-        bot.send_message(user.id, 'Я не могу понять что ты от меня хочешь', reply_markup=rm)
+            bot.send_message(user.id, 'Я не могу понять что ты от меня хочешь', reply_markup=rm)
+    except Exception as e:
+        print(e)
 
 
 def main():
@@ -63,10 +68,13 @@ def main():
                 _user = User(msg.sender.id, '%s %s' % (msg.sender.first_name, msg.sender.last_name))
                 add(users, _user)
 
-                print '"%s" from %s' % (msg.text, _user.name)
+                print('"%s" from %s' % (msg.text, _user.name))
                 handle(find_user(_user.id), msg)
             if not len(updates):
                 time.sleep(0.2)
         except Exception:
             bot.send_message(108478453, "ошибка")
-main()
+
+
+if __name__ == '__main__':
+    main()

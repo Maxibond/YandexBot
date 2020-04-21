@@ -72,8 +72,8 @@ def main():
                 handle(find_user(_user.id), msg)
             if not len(updates):
                 time.sleep(0.2)
-        except Exception:
-            bot.send_message(108478453, "ошибка")
+        except Exception as e:
+            print(e)
 
 
 if __name__ == '__main__':

@@ -140,7 +140,7 @@ def handle_spend(user, text):
     journal.pool.get(user.id, []).append(journal.Transaction(user.id, text, datetime.datetime.now(), user.value))
     user.balance -= user.value
     user.action = ACTION.Empty
-    if user.value >= 0:
+    if user.value > 0:
         return 'Ты потратил %d%s на %s.\n Текущий баланс - %d%s' \
                % (user.value, user.currency, text, user.balance, user.currency), False
     else:
@@ -158,7 +158,7 @@ def handle_balance(user, text):
     if value:
         delta = value - user.balance
         user.balance = value
-        journal.pool.get(user.id, []).append(journal.Transaction(user.id, "➕Доход"))
+        journal.pool.get(user.id, []).append(journal.Transaction(user.id, "➕Доход", datetime.datetime.now(), 0))
         user.balance_trans.value += delta
         user.action = ACTION.Empty
         answer = "Новый баланс - %d%s" % (user.balance, user.currency)
@@ -192,17 +192,16 @@ def handle_tutorial(user, text):
 
 
 def t_handle_spend(user, text):
+    user.action = ACTION.Empty
     if is_command(text, '/cancel'):
-        user.action = ACTION.Empty
         return 'Обучение закончено!', False
     if text == "➕Доход":
-        user.value = -user.value
+        user.value = -user
     journal.pool.get(user.id, []).append(journal.Transaction(user.id, text, datetime.datetime.now(), user.value))
-    user.action = ACTION.Empty
     user.balance -= user.value
     if user.value >= 0:
-        return 'Ты потратил %d%s на %s.\n Текущий баланс - %d%s' \
-               % (user.value, user.currency, text, user.balance, user.currency), False
+        return f'Ты потратил {user.value} {user.currency} на {text}.\n' \
+               f' Текущий баланс - {user.balance} {user.currency}', False
     else:
         return 'Текущий баланс - %d%s' % (user.balance, user.currency), False
 
@@ -220,9 +219,11 @@ def t_handle_balance(user, text):
         delta = value - user.balance
         user.balance_trans.value += delta
         user.balance = value
-        user.action = ACTION.TutorialCurrency
-        answer = "Отлично!\nТеперь укажи валюту"
-        return answer, kb.create_keyboard('руб', '$', '€')
+        user.action = ACTION.Empty
+        answer = f'Твой баланс {user.balance} {user.currency}\n\n' \
+                 f'А теперь давай потратимся на что-нибудь\n' \
+                 'Напиши сумму, которую ты потратил(или заработал)'
+        return answer, False
     else:
         return "Извини, но я не понимаю такое число\nВводи числа в формате, как показано ниже - " \
                "\n\n123\n123\n123.00\n\nИ так, повторим\nКакой баланс у тебя сейчас?", False
@@ -243,11 +244,11 @@ action_handler = {
     ACTION.Empty: handle_empty,
     ACTION.Spend: handle_spend,
     ACTION.Balance: handle_balance,
-    ACTION.Currency: handle_currency,
+    # ACTION.Currency: handle_currency,
     ACTION.AskingTutorial: handle_asking_tutorial,
     ACTION.TutorialSpend: t_handle_spend,
     ACTION.TutorialBalance: t_handle_balance,
-    ACTION.TutorialCurrency: t_handle_currency,
+    # ACTION.TutorialCurrency: t_handle_currency,
 }
 
 

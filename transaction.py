@@ -26,7 +26,7 @@ def show(user):
 
 
 def get_tags(user):
-    return [i.tag for i in pool.get(user.id, [])]
+    return {i.tag for i in pool.get(user.id, [])}
 
 
 def get_history(user, k=10):

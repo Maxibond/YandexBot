@@ -121,6 +121,12 @@ def handle_empty(user, text: str):
     elif is_command(text, '/f'):
         journal.fill(user)
         answer = "Готово"
+    elif is_command(text, '/save'):
+        from storage import save_pool
+        save_pool(journal.pool)
+        from bot import User
+        User.save()
+        return 'Сохранил', False
     else:
         value = get_number(text, user)
         if value < 0 or value > VERY_BIG_NUMBER:

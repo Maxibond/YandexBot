@@ -7,7 +7,7 @@ class Transaction:
     def __init__(self, uid, tag, data, value):
         self.uid = uid
         self.tag = tag
-        self.data = data
+        self.data: datetime.datetime = data
         self.value = value
 
     def __str__(self):
@@ -32,6 +32,8 @@ def get_tags(user):
 def get_history(user, k=10):
     answer = '\n'
     i = 0
+    print(pool, user.id)
+    print(type(list(pool.keys())[0]), type(user.id))
     for record in pool.get(user.id, []):
         if record.tag != '$yhg':
             i += 1
@@ -49,6 +51,11 @@ def cancel_last_transaction(user):
 
 
 pool = defaultdict(list)
+
+
+def init_pool(data):
+    global pool
+    pool = data
 
 
 def fill(user):

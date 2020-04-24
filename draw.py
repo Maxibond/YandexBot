@@ -30,7 +30,6 @@ def convert_tags(tags: typing.Dict[str, float], add_positive=True):
     res = []
     print(tags)
     for text, value in tags.items():
-        print(text, value)
         if 'Доход' in text:
             text = 'Доход'
         if add_positive:

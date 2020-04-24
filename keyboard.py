@@ -1,5 +1,5 @@
 # coding=utf-8
-def sort_by_size(keys):
+def sort_by_size(keys: list):
     is_done = False
     while not is_done:
         is_done = True
@@ -28,7 +28,7 @@ def add_button(kb, key):
         kb.append([key])
 
 
-def create_keyboard_with_tags(keys):
+def create_keyboard_with_tags(keys: list):
     sort_by_size(keys)
     if '➕Доход' in keys:
         keys.remove('➕Доход')

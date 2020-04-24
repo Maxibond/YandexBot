@@ -60,4 +60,4 @@ def fill(user):
                      Transaction(user.id, "Телефон", datetime.datetime.now(), 200),
                      Transaction(user.id, "Лекарства", datetime.datetime.now(), 320),
                      Transaction(user.id, "➕Доход", datetime.datetime.now(), -3200)]
-    user.balance = sum(t.value for t in pool[user.id])
+    user.balance = -sum(t.value for t in pool[user.id])

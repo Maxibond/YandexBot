@@ -135,16 +135,20 @@ def handle_empty(user, text: str):
 
 
 def handle_spend(user, text):
+    if is_command(text, '/cancel'):
+        user.action = ACTION.Empty
+        return 'Отмена', False
+
     if text == "➕Доход":
         user.value = -user.value
     journal.pool.get(user.id, []).append(journal.Transaction(user.id, text, datetime.datetime.now(), user.value))
     user.balance -= user.value
     user.action = ACTION.Empty
     if user.value > 0:
-        return 'Ты потратил %d%s на %s.\n Текущий баланс - %d%s' \
+        return 'Ты потратил %d%s на %s.\n Текущий баланс: %d%s' \
                % (user.value, user.currency, text, user.balance, user.currency), False
     else:
-        return 'Текущий баланс %d%s' % (user.balance, user.currency), False
+        return 'Текущий баланс: %d%s' % (user.balance, user.currency), False
 
 
 def handle_balance(user, text):
@@ -196,14 +200,14 @@ def t_handle_spend(user, text):
     if is_command(text, '/cancel'):
         return 'Обучение закончено!', False
     if text == "➕Доход":
-        user.value = -user
+        user.value = -user.value
     journal.pool.get(user.id, []).append(journal.Transaction(user.id, text, datetime.datetime.now(), user.value))
     user.balance -= user.value
     if user.value >= 0:
         return f'Ты потратил {user.value} {user.currency} на {text}.\n' \
-               f' Текущий баланс - {user.balance} {user.currency}', False
+               f' Текущий баланс: {user.balance} {user.currency}', False
     else:
-        return 'Текущий баланс - %d%s' % (user.balance, user.currency), False
+        return 'Текущий баланс: %d%s' % (user.balance, user.currency), False
 
 
 def t_handle_balance(user, text):

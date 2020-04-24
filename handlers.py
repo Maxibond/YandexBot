@@ -28,7 +28,10 @@ class ACTION(object):
     Spend = 1
     Balance = 2
     Currency = 3
-    AskingTutorial = 4
+    AskingTutorial = 20
+    TutorialSpend = 21
+    TutorialBalance = 22
+    TutorialCurrency = 23
     values = {
         Empty: 'Action is empty',
         Spend: 'When user spend some money',
@@ -66,7 +69,6 @@ def handle_empty(user, text: str):
                  'Я создан что бы помочь тебе следить за твоими средствами.\n' \
                  f'Хочешь начать с обучения, {user.name}?'
         user.action = ACTION.AskingTutorial
-        action_handler[ACTION.AskingTutorial] = handle_asking_tutorial
         return answer, kb.create_keyboard('Да', 'Нет')
     elif is_command(text, '/tutorial'):
         return handle_tutorial(user, text)
@@ -99,6 +101,7 @@ def handle_empty(user, text: str):
         else:
             return "Слишком мало данных для статистики", False
     elif is_command(text, '/cancel'):
+        user.action = ACTION.Empty
         journal.cancel_last_transaction(user)
         return "Последняя транзакция отменена.", False
     elif is_command(text, '/help'):
@@ -184,20 +187,19 @@ def handle_asking_tutorial(user, text):
 
 
 def handle_tutorial(user, text):
-    user.action = ACTION.Balance
-    action_handler[ACTION.Spend] = t_handle_spend
-    action_handler[ACTION.Balance] = t_handle_balance
-    action_handler[ACTION.Currency] = t_handle_currency
+    user.action = ACTION.TutorialBalance
     return 'Давай начнём с простого! Какой у тебя текущий баланс?', False
 
 
 def t_handle_spend(user, text):
+    if is_command(text, '/cancel'):
+        user.action = ACTION.Empty
+        return 'Обучение закончено!', False
     if text == "➕Доход":
         user.value = -user.value
     journal.pool.get(user.id, []).append(journal.Transaction(user.id, text, datetime.datetime.now(), user.value))
     user.action = ACTION.Empty
     user.balance -= user.value
-    action_handler[ACTION.Spend] = handle_spend
     if user.value >= 0:
         return 'Ты потратил %d%s на %s.\n Текущий баланс - %d%s' \
                % (user.value, user.currency, text, user.balance, user.currency), False
@@ -206,6 +208,10 @@ def t_handle_spend(user, text):
 
 
 def t_handle_balance(user, text):
+    if is_command(text, '/cancel'):
+        user.action = ACTION.Empty
+        return 'Обучение закончено!', False
+
     value = get_number(text, user)
     if value < 0 or value > VERY_BIG_NUMBER:
         return "Введите положительное разумное число!", False
@@ -214,9 +220,8 @@ def t_handle_balance(user, text):
         delta = value - user.balance
         user.balance_trans.value += delta
         user.balance = value
-        user.action = ACTION.Currency
+        user.action = ACTION.TutorialCurrency
         answer = "Отлично!\nТеперь укажи валюту"
-        action_handler[ACTION.Balance] = handle_balance
         return answer, kb.create_keyboard('руб', '$', '€')
     else:
         return "Извини, но я не понимаю такое число\nВводи числа в формате, как показано ниже - " \
@@ -224,9 +229,12 @@ def t_handle_balance(user, text):
 
 
 def t_handle_currency(user, text):
+    if is_command(text, '/cancel'):
+        user.action = ACTION.Empty
+        return 'Обучение закончено!', False
+
     user.currency = text.replace('.', ' ').strip()
     user.action = ACTION.Empty
-    action_handler[ACTION.Currency] = handle_currency
     return 'Твой баланс %d%s\n\nА теперь давай потратимся на что-нибудь\n' \
            'Напиши сумму, которую ты потратил(или заработал)' % (user.balance, user.currency), False
 
@@ -237,6 +245,9 @@ action_handler = {
     ACTION.Balance: handle_balance,
     ACTION.Currency: handle_currency,
     ACTION.AskingTutorial: handle_asking_tutorial,
+    ACTION.TutorialSpend: t_handle_spend,
+    ACTION.TutorialBalance: t_handle_balance,
+    ACTION.TutorialCurrency: t_handle_currency,
 }
 
 

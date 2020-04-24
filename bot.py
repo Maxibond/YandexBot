@@ -35,7 +35,7 @@ def add(_users, user):
         if u.id == user.id:
             return
     users.append(user)
-    journal.pool.append(user.balance_trans)
+    journal.pool[user.id].append(user.balance_trans)
 
 
 def handle(user, message):
@@ -71,7 +71,7 @@ def main():
                 print('"%s" from %s' % (msg.text, _user.name))
                 handle(find_user(_user.id), msg)
             if not len(updates):
-                time.sleep(0.2)
+                time.sleep(0.1)
         except Exception as e:
             print(e)
 

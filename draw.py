@@ -1,4 +1,6 @@
 # coding=utf-8
+import typing
+
 from PIL import Image, ImageDraw, ImageFont
 
 import math
@@ -24,24 +26,30 @@ class Tag:
         self.balance = balance
 
 
-def convert_tags(tags, add_positive=True):
+def convert_tags(tags: typing.Dict[str, float], add_positive=True):
     res = []
-    for i in tags.keys():
+    print(tags)
+    for text, value in tags.items():
+        print(text, value)
+        if 'Доход' in text:
+            text = 'Доход'
         if add_positive:
-            res.append(Tag(i, -tags[i]))
+            res.append(Tag(text, -value))
         else:
-            if tags[i] > 0:
-                res.append(Tag(i, -tags[i]))
+            if value > 0:
+                res.append(Tag(text, -value))
     res.sort(key=lambda m: abs(m.balance), reverse=True)
     return res
 
 
-def drawLines(time, tags):
+def drawLines(filename, time, tags):
     tags = convert_tags(tags)
-    print(journal.pool)
     img_w = 310
     img_h = 160 + 30 * len(tags)
-    image = Image.new("RGB", (img_w, img_h), '#EBFFE6')
+    image = Image.new("RGB", (img_w, img_h), '#F3FFF0')
+
+    green = '#BFFE9E'
+    red = '#FE9EB5'
 
     draw = ImageDraw.Draw(image)
 
@@ -83,8 +91,8 @@ def drawLines(time, tags):
     debit_procent = float(debit_amount) / total_amount
     debit_w = (img_w - 2 * pad) * debit_procent
 
-    draw.rectangle([(pad, y_pos), (debit_w + pad, y_pos + tag_width)], fill='green')
-    draw.rectangle([(debit_w + pad, y_pos), (img_w - pad, y_pos + tag_width)], fill='red')
+    draw.rectangle([(pad, y_pos), (debit_w + pad, y_pos + tag_width)], fill=green)
+    draw.rectangle([(debit_w + pad, y_pos), (img_w - pad, y_pos + tag_width)], fill=red)
 
     debit_text = '+' + str(debit_amount)
     credit_text = str(credit_amount)
@@ -107,7 +115,7 @@ def drawLines(time, tags):
             m = (img_w / 100) / (float(abs(tag.balance)) / total_amount)
         if tag.balance == 0:
             continue
-        fill = 'green' if tag.balance > 0 else 'red'
+        fill = green if tag.balance > 0 else red
         draw.rectangle([(pad, y_pos), (float(abs(tag.balance)) / total_amount * 100 * m, y_pos + tag_width)], fill=fill)
         draw.text((pad * 3, pad + y_pos), str(tag.balance), fill='black', font=font)
         size_name = font.getsize(tag.name)
@@ -124,20 +132,20 @@ def drawLines(time, tags):
     average_debit = debit_amount / days
     average_credit = credit_amount / days
 
-    draw.text((pad, y_pos), u'Средний доход в день: ' + str(average_debit), font=font, fill='black')
+    draw.text((pad, y_pos), u'Средний доход в день: ' + f"{average_debit:0.2f}", font=font, fill='black')
     y_pos += pad * 3
-    draw.text((pad, y_pos), u'Средний расход в день: ' + str(average_credit), font=font, fill='black')
+    draw.text((pad, y_pos), u'Средний расход в день: ' + f"{average_credit:0.2f}", font=font, fill='black')
 
     del draw
-    image.save("1.png", "PNG")
+    image.save(filename, "PNG")
 
 
 # Draw Circle Total
-def drawCircle(time, tags):
+def drawCircle(filename, time, tags):
     tags = convert_tags(tags, False)
     img_w = 310
     img_h = 300 + 25 * len(tags)
-    image = Image.new("RGB", (img_w, img_h), '#EBFFE6')
+    image = Image.new("RGB", (img_w, img_h), '#F3FFF0')
     draw = ImageDraw.Draw(image)
     draw.text(((img_w - fontHead.getsize(time)[0]) / 2, pad), time, fill='black', font=fontHead)
     draw.line([(pad, pad + 20), (img_w - pad, pad + 20)], fill='black', width=1)
@@ -187,4 +195,4 @@ def drawCircle(time, tags):
         y_pos += tag_width
 
     del draw
-    image.save("1.png", "PNG")
+    image.save(filename, "PNG")

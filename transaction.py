@@ -1,5 +1,6 @@
 # coding=utf-8
 import datetime
+from collections import defaultdict
 
 
 class Transaction:
@@ -15,8 +16,8 @@ class Transaction:
 
 def show(user):
     res = {}
-    for record in pool:
-        if record.uid == user.id and record.tag != '$yhg':
+    for record in pool.get(user.id, []):
+        if record.tag != '$yhg':
             if res.get(record.tag, False):
                 res[record.tag] += record.value
             else:
@@ -25,42 +26,38 @@ def show(user):
 
 
 def get_tags(user):
-    return list({i.tag for i in pool if i.uid == user.id})
+    return [i.tag for i in pool.get(user.id, [])]
 
 
 def get_history(user, k=10):
     answer = '\n'
     i = 0
-    for record in pool:
-        if record.uid == user.id and record.tag != '$yhg':
+    for record in pool.get(user.id, []):
+        if record.tag != '$yhg':
             i += 1
             answer = '%s\n%s' % (record, answer)
             if i == k:
                 break
     if i == 0:
-        return "Транзакцие не найдены"
+        return "Транзакции не найдены"
     else:
         return 'Последние %d транзакций - \n%s' % (i, answer)
 
 
 def cancel_last_transaction(user):
-    for i in range(len(pool) - 1, 0, -1):
-        if pool[i].uid == user.id:
-            del pool[i]
-            return
+    del pool.get(user.id, [])[-1]
 
 
-pool = list()
+pool = defaultdict(list)
 
 
 def fill(user):
-    pool.append(Transaction(user.id, "Еда", datetime.datetime.now(), 150))
-    pool.append(Transaction(user.id, "Такси", datetime.datetime.now(), 90))
-    pool.append(Transaction(user.id, "Интернет", datetime.datetime.now(), 400))
-    pool.append(Transaction(user.id, "Ананас", datetime.datetime.now(), 700))
-    pool.append(Transaction(user.id, "Бензин", datetime.datetime.now(), 1000))
-    pool.append(Transaction(user.id, "Телефон", datetime.datetime.now(), 200))
-    pool.append(Transaction(user.id, "Лекарства", datetime.datetime.now(), 320))
-    pool.append(Transaction(user.id, "➕Доход", datetime.datetime.now(), -3200))
-    user.balance = 340
-    # user.balance_trans.value = user.balance_trans.value + user.balance
+    pool[user.id] = [Transaction(user.id, "Еда", datetime.datetime.now(), 150),
+                     Transaction(user.id, "Такси", datetime.datetime.now(), 90),
+                     Transaction(user.id, "Интернет", datetime.datetime.now(), 400),
+                     Transaction(user.id, "Ананас", datetime.datetime.now(), 700),
+                     Transaction(user.id, "Бензин", datetime.datetime.now(), 1000),
+                     Transaction(user.id, "Телефон", datetime.datetime.now(), 200),
+                     Transaction(user.id, "Лекарства", datetime.datetime.now(), 320),
+                     Transaction(user.id, "➕Доход", datetime.datetime.now(), -3200)]
+    user.balance = sum(t.value for t in pool[user.id])

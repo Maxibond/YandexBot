@@ -1,9 +1,15 @@
 # coding=utf-8
 import datetime
+import time
+
 import twx.botapi as tel
 import draw
 import keyboard as kb
 import transaction as journal
+
+
+VERY_BIG_NUMBER = 9_876_543
+IMAGE_PATH = './images'
 
 
 def get_number(text, user):
@@ -58,8 +64,9 @@ def handle_empty(user, text: str):
     elif text.lower() in synonym['/total']:
         records = journal.show(user)
         if len(records):
-            draw.drawCircle(u"Март", records)
-            file_info = tel.InputFileInfo("1.png", open("1.png", "rb"), "image/png")
+            filename = f"{IMAGE_PATH}/{user.id}-total.png"
+            draw.drawCircle(filename, datetime.datetime.now().strftime("%B"), records)
+            file_info = tel.InputFileInfo(filename, open(filename, "rb"), "image/png")
             return tel.InputFile("photo", file_info), False
         else:
             return "Слишком мало данных для статистики", False
@@ -76,9 +83,9 @@ def handle_empty(user, text: str):
     elif text.lower() in synonym['/stats']:
         records = journal.show(user)
         if len(records):
-            # records['Доход'] += user.balance_trans.value
-            draw.drawLines(u"Март", records)
-            file_info = tel.InputFileInfo("1.png", open("1.png", "rb"), "image/png")
+            filename = f"{IMAGE_PATH}/{user.id}-stats.png"
+            draw.drawLines(filename, datetime.datetime.now().strftime("%B"), records)
+            file_info = tel.InputFileInfo(filename, open(filename, "rb"), "image/png")
             return tel.InputFile("photo", file_info), False
         else:
             return "Слишком мало данных для статистики", False
@@ -90,15 +97,8 @@ def handle_empty(user, text: str):
         answer = "Готово"
     else:
         value = get_number(text, user)
-        # print value
-        # if not value:
-        #     text = text.split(' ')
-        #     if len(text) == 2:
-        #         value = get_number(text[0], user)
-        #         answer = text[1]
-        #         if not value:
-        #             value = get_number(text[1], user)
-        #             answer = text[0]
+        if value < 0 or value > VERY_BIG_NUMBER:
+            return "Введите положительное разумное число!", False
 
         if value:
             answer = 'На что ты потратил %d%s?\nЕсли это заработанные средства - Жми "➕Доход"' % (value, user.currency)
@@ -111,7 +111,7 @@ def handle_empty(user, text: str):
 def handle_spend(user, text):
     if text == "➕Доход":
         user.value = -user.value
-    journal.pool.append(journal.Transaction(user.id, text, datetime.datetime.now(), user.value))
+    journal.pool.get(user.id, []).append(journal.Transaction(user.id, text, datetime.datetime.now(), user.value))
     user.balance -= user.value
     user.action = ACTION.Empty
     if user.value >= 0:
@@ -126,10 +126,13 @@ def handle_balance(user, text):
         user.action = ACTION.Empty
         return "Отменено", False
     value = get_number(text, user)
+    if value < 0 or value > VERY_BIG_NUMBER:
+        return "Введите положительное разумное число!", False
+
     if value:
         delta = value - user.balance
         user.balance = value
-        journal.pool.append(journal.Transaction(user.id, "➕Доход"))
+        journal.pool.get(user.id, []).append(journal.Transaction(user.id, "➕Доход"))
         user.balance_trans.value += delta
         user.action = ACTION.Empty
         answer = "Новый баланс - %d%s" % (user.balance, user.currency)
@@ -151,7 +154,7 @@ def handle_currency(user, text):
 def t_handle_spend(user, text):
     if text == "➕Доход":
         user.value = -user.value
-    journal.pool.append(journal.Transaction(user.id, text, datetime.datetime.now(), user.value))
+    journal.pool.get(user.id, []).append(journal.Transaction(user.id, text, datetime.datetime.now(), user.value))
     user.action = ACTION.Empty
     user.balance -= user.value
     action_handler[ACTION.Spend] = handle_spend
@@ -164,6 +167,9 @@ def t_handle_spend(user, text):
 
 def t_handle_balance(user, text):
     value = get_number(text, user)
+    if value < 0 or value > VERY_BIG_NUMBER:
+        return "Введите положительное разумное число!", False
+
     if value:
         delta = value - user.balance
         user.balance_trans.value += delta

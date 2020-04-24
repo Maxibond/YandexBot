@@ -7,7 +7,6 @@ import draw
 import keyboard as kb
 import transaction as journal
 
-
 VERY_BIG_NUMBER = 9_876_543
 IMAGE_PATH = './images'
 
@@ -29,22 +28,31 @@ class ACTION(object):
     Spend = 1
     Balance = 2
     Currency = 3
+    AskingTutorial = 4
     values = {
         Empty: 'Action is empty',
         Spend: 'When user spend some money',
         Balance: 'When user set new balance',
         Currency: 'Users currency',
+        AskingTutorial: 'Asking tutorial',
     }
 
+
 synonym = {
-    '/start': ['Cтарт', 'Обучение', 'Помощь', '/start'],
-    '/setbalance': ['Изменить баланс', '/setbalance'],
-    '/total': ['Всего', 'Статистика', 'Месяц', '/total'],
-    '/history': ['История', 'Выписка', '/history'],
-    '/balance': ['/balance', 'Баланс', 'Остаток'],
-    '/stats': ['/stats', 'Статистика'],
-    '/cancel': ['Отмена', '/cancel'],
+    '/start': ['Cтарт', 'Начать', 'start'],
+    '/setbalance': ['Изменить баланс', 'setbalance'],
+    '/total': ['Всего', 'Статистика', 'Месяц', 'total'],
+    '/history': ['История', 'Выписка', 'history'],
+    '/balance': ['balance', 'Баланс', 'Остаток'],
+    '/stats': ['stats', 'Статистика'],
+    '/cancel': ['Отмена', 'cancel'],
+    '/tutorial': ['Обучение', 'tutorial'],
+    '/help': ['help', 'Помощь', 'Хелп'],
 }
+
+
+def is_command(text, command):
+    return text.startswith(command) or text.lower() in synonym.get(command, [])
 
 
 def handle_empty(user, text: str):
@@ -52,16 +60,17 @@ def handle_empty(user, text: str):
     if text is None:
         return "Я могу отвечать только на текст.", False
 
-    elif text.lower() in synonym['/start'] or text.startswith('/start'):
-        answer = 'Привет, %s!\n\n' \
+    elif is_command(text, '/start'):
+        answer = 'Привет! Я снова живу!\n\n' \
+                 '/help для списка команд\n' \
                  'Я создан что бы помочь тебе следить за твоими средствами.\n' \
-                 'Давай начнем с простого. \n\n' \
-                 'Задай текущий баланс' % user.name
-        user.action = ACTION.Balance
-        action_handler[ACTION.Spend] = t_handle_spend
-        action_handler[ACTION.Balance] = t_handle_balance
-        action_handler[ACTION.Currency] = t_handle_currency
-    elif text.lower() in synonym['/total']:
+                 f'Хочешь начать с обучения, {user.name}?'
+        user.action = ACTION.AskingTutorial
+        action_handler[ACTION.AskingTutorial] = handle_asking_tutorial
+        return answer, kb.create_keyboard('Да', 'Нет')
+    elif is_command(text, '/tutorial'):
+        return handle_tutorial(user, text)
+    elif is_command(text, '/total'):
         records = journal.show(user)
         if len(records):
             filename = f"{IMAGE_PATH}/{user.id}-total.png"
@@ -70,17 +79,17 @@ def handle_empty(user, text: str):
             return tel.InputFile("photo", file_info), False
         else:
             return "Слишком мало данных для статистики", False
-    elif text.lower().strip() in synonym['/balance']:
+    elif is_command(text, '/balance'):
         answer = 'Текущий баланс %d%s\n' % (user.balance, user.currency)
 
-    elif text.lower() in synonym['/setbalance']:
+    elif is_command(text, '/setbalance'):
         user.action = ACTION.Balance
         answer = 'Текущий баланс - %d%s.\n/setbalance для отмены.\nВведите новое значение - ' \
                  % (user.balance, user.currency)
-    elif text.lower() in synonym['/history']:
+    elif is_command(text, '/history'):
         answer = journal.get_history(user)
         return answer, False
-    elif text.lower() in synonym['/stats']:
+    elif is_command(text, '/stats'):
         records = journal.show(user)
         if len(records):
             filename = f"{IMAGE_PATH}/{user.id}-stats.png"
@@ -89,10 +98,24 @@ def handle_empty(user, text: str):
             return tel.InputFile("photo", file_info), False
         else:
             return "Слишком мало данных для статистики", False
-    elif text.lower() in synonym['/cancel']:
+    elif is_command(text, '/cancel'):
         journal.cancel_last_transaction(user)
         return "Последняя транзакция отменена.", False
-    elif text == '/f':
+    elif is_command(text, '/help'):
+        return '''
+        Введите любое число, чтобы начать транзакцию.
+        /start - начни обучение здесь
+        /setbalance - установить баланс
+        /total - показать суммарный баланс за месяц
+        /history - показать историю транзакций
+        /balance - проверить баланс
+        /stats - показать статистику за месяц
+        /cancel - отмена операции
+        /tutorial - начать обучение
+        /help - подсказка
+        /f - [debug] установить демо транзакции (стирает ваши транзакции, осторожно!)
+        ''', False
+    elif is_command(text, '/f'):
         journal.fill(user)
         answer = "Готово"
     else:
@@ -102,7 +125,7 @@ def handle_empty(user, text: str):
 
         if value:
             answer = 'На что ты потратил %d%s?\nЕсли это заработанные средства - Жми "➕Доход"' % (value, user.currency)
-            keyboard = kb.create_keyboard(journal.get_tags(user))
+            keyboard = kb.create_keyboard_with_tags(journal.get_tags(user))
             user.action = ACTION.Spend
             user.value = value
     return answer, keyboard
@@ -151,6 +174,23 @@ def handle_currency(user, text):
            % (user.balance, user.currency), False
 
 
+def handle_asking_tutorial(user, text):
+    if text.lower() == 'да':
+        return handle_tutorial(user, text)
+    elif text.lower() == 'нет':
+        user.action = ACTION.Empty
+        return 'Ну ладно. Посмотри /help для ознакомления с командами', False
+    return 'Я тебя не понял. Cкажи НЕТ если не хочешь :)', kb.create_keyboard('Да', 'Нет')
+
+
+def handle_tutorial(user, text):
+    user.action = ACTION.Balance
+    action_handler[ACTION.Spend] = t_handle_spend
+    action_handler[ACTION.Balance] = t_handle_balance
+    action_handler[ACTION.Currency] = t_handle_currency
+    return 'Давай начнём с простого! Какой у тебя текущий баланс?', False
+
+
 def t_handle_spend(user, text):
     if text == "➕Доход":
         user.value = -user.value
@@ -177,10 +217,10 @@ def t_handle_balance(user, text):
         user.action = ACTION.Currency
         answer = "Отлично!\nТеперь укажи валюту"
         action_handler[ACTION.Balance] = handle_balance
-        return answer, [['руб'], ['$'], ['€']]
+        return answer, kb.create_keyboard('руб', '$', '€')
     else:
         return "Извини, но я не понимаю такое число\nВводи числа в формате, как показано ниже - " \
-              "\n\n123\n123\n123.00\n\nИ так, повторим\nКакой баланс у тебя сейчас?", False
+               "\n\n123\n123\n123.00\n\nИ так, повторим\nКакой баланс у тебя сейчас?", False
 
 
 def t_handle_currency(user, text):
@@ -188,7 +228,7 @@ def t_handle_currency(user, text):
     user.action = ACTION.Empty
     action_handler[ACTION.Currency] = handle_currency
     return 'Твой баланс %d%s\n\nА теперь давай потратимся на что-нибудь\n' \
-        'Напиши сумму, которую ты потратил(или заработал)' % (user.balance, user.currency), False
+           'Напиши сумму, которую ты потратил(или заработал)' % (user.balance, user.currency), False
 
 
 action_handler = {
@@ -196,6 +236,7 @@ action_handler = {
     ACTION.Spend: handle_spend,
     ACTION.Balance: handle_balance,
     ACTION.Currency: handle_currency,
+    ACTION.AskingTutorial: handle_asking_tutorial,
 }
 
 

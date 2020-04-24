@@ -28,7 +28,7 @@ def add_button(kb, key):
         kb.append([key])
 
 
-def create_keyboard(keys):
+def create_keyboard_with_tags(keys):
     sort_by_size(keys)
     if '➕Доход' in keys:
         keys.remove('➕Доход')
@@ -37,4 +37,11 @@ def create_keyboard(keys):
     kb = [['➕Доход'], ]
     for key in keys:
         add_button(kb, key)
+    return kb
+
+
+def create_keyboard(*args):
+    kb = []
+    for arg in args:
+        add_button(kb, arg)
     return kb

@@ -2,7 +2,7 @@ attrs==19.3.0
 certifi==2020.4.5.1
 chardet==3.0.4
 idna==2.9
-Pillow==7.1.1
+Pillow==9.0.0
 requests==2.23.0
 twx==0.5a5
 twx.botapi==3.6.2
